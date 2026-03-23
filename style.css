@@ -1,0 +1,141 @@
+/* =========================
+   PAGE BACKGROUND
+   ========================= */
+
+body{
+  margin:0;
+  color:white;
+  font-family: Arial, sans-serif;
+  text-align:center;
+
+  /* фон вокруг игрового поля */
+  background-image: url("assets/background.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+
+  min-height: 100vh;
+  min-height: 100svh; /* учитывает адресную строку на мобайле */
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* =========================
+   LAYOUT
+   ========================= */
+
+.wrap{
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+.top{
+  display:flex;
+  justify-content:center;
+}
+
+.titleBlock{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+
+.titleImg{
+  display: block;
+  width: min(46vw, 360px);
+  height: auto;
+  aspect-ratio: 1024 / 512;
+  margin: 4px 0 2px;
+}
+
+.muted{
+  color: #254160;
+  font-family: 'Fredoka One', cursive;
+  font-size: 14px;
+  max-width: 420px;
+  line-height: 1.4;
+  text-shadow: 1px 1px 2px rgba(10,25,60,0.35);
+}
+
+/* =========================
+   GAME AREA
+   ========================= */
+
+.gameArea{
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px 0;
+  box-sizing: border-box;
+}
+
+/* frame scales with viewport, capped at native canvas width */
+.canvasFrame{
+  position: relative;
+  width: min(92vw, 720px);
+  aspect-ratio: 1 / 1;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* border ornament rendered on top of the canvas so it overlaps the edges */
+.canvasFrame.border-alt::after{
+  border-image-source: url("assets/border-image1.png");
+}
+
+.canvasFrame::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+
+  border-style: solid;
+  border-color: transparent;
+  border-width: clamp(18px, 2.5vw, 26px);
+  border-image-source: url("assets/border-image.png");
+  border-image-slice: 15%;
+  border-image-width: clamp(48px, 10vw, 72px);
+  border-image-outset: clamp(0px, 1.8vw, 13px);
+  border-image-repeat: stretch;
+}
+
+/* canvas fills the frame exactly */
+canvas{
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #D2DCEE;
+  touch-action: manipulation;
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 720px){
+
+  .top{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .titleBlock{
+    text-align: center;
+  }
+
+  h1{
+    font-size: clamp(28px, 8vw, 52px);
+  }
+
+}
