@@ -23,14 +23,18 @@
     <div class="gameArea">
       <div class="canvasFrame">
         <canvas id="game" width="720" height="720"></canvas>
+        <img class="borderImg" src="assets/border-image.png" alt="" />
       </div>
     </div>
   </div> <!-- ВАЖНО: закрыли wrap -->
 
   <script src="game.js"></script>
   <script>
+    const _borderSrcs = ['assets/border-image.png', 'assets/border-image1.png'];
+    let _borderFrame = 0;
     setInterval(() => {
-      document.querySelector('.canvasFrame').classList.toggle('border-alt');
+      _borderFrame = 1 - _borderFrame;
+      document.querySelector('.borderImg').src = _borderSrcs[_borderFrame];
     }, 600);
   </script>
 </body>

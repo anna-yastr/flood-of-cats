@@ -87,26 +87,16 @@ body{
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
 }
 
-/* border ornament rendered on top of the canvas so it overlaps the edges */
-.canvasFrame.border-alt::after{
-  border-image-source: url("assets/border-image1.png");
-}
-
-.canvasFrame::after{
-  content: '';
+/* border ornament — обычная картинка поверх канваса */
+.borderImg{
   position: absolute;
-  inset: 0;
+  top: clamp(-13px, -1.8vw, -7px);
+  left: clamp(-13px, -1.8vw, -7px);
+  width: calc(100% + clamp(14px, 3.6vw, 26px));
+  height: calc(100% + clamp(14px, 3.6vw, 26px));
   pointer-events: none;
   z-index: 5;
-
-  border-style: solid;
-  border-color: transparent;
-  border-width: clamp(18px, 2.5vw, 26px);
-  border-image-source: url("assets/border-image.png");
-  border-image-slice: 15%;
-  border-image-width: clamp(48px, 10vw, 72px);
-  border-image-outset: clamp(0px, 1.8vw, 13px);
-  border-image-repeat: stretch;
+  display: block;
 }
 
 /* canvas fills the frame exactly */
@@ -136,6 +126,11 @@ canvas{
 
   h1{
     font-size: clamp(28px, 8vw, 52px);
+  }
+
+  /* iOS Safari: fixed background ломает compositing дочерних элементов */
+  body{
+    background-attachment: scroll;
   }
 
 }

@@ -11,7 +11,7 @@ const STATUS_Y_OFFSET = 30;
 
 // Game rules
 const MAX_BUGS_ON_SCREEN = 20;
-const MAX_ESCAPED_CATS = 20;
+const MAX_ESCAPED_CATS = 40; // 40 / 2 * 5% = 100% — вода заливает поле
 
 // Bug visuals
 const IMAGE_SCALE = 2.1875;   // базовый скейл ботинка
@@ -22,7 +22,7 @@ const ROTATE_DEG = 30;        // ±30 градусов
 // Spawn speed (geometric progression)
 const SPAWN_INTERVAL_START_MS = 900;
 const SPAWN_INTERVAL_MULTIPLIER = 0.970; // ближе к 1.0 = медленнее ускоряется
-const SPAWN_INTERVAL_MIN_MS = 150;
+const SPAWN_INTERVAL_MIN_MS = 250;
 const CLICK_SPEEDUP_FACTOR = 0.968;
 
 // Defeat image sizing
@@ -34,6 +34,9 @@ const DEFEAT_IMG_Y_OFFSET = 0;
 const DEFEAT_SRC = "assets/defeat.png";
 const CAT_COUNT = 5;
 const CAT_PREFIX = "assets/cat";
+const WATER_LEVEL_SRC = "assets/Water_level.png";
+const WATER_LEVEL_TOP_SRC = "assets/Water_level_top.png";
+const WATER_LEVEL_STEP = 0.05;   // +5% высоты канваса за каждых 2 пропущенных кота
 
 /* =========================
    GAME STATE
@@ -49,18 +52,25 @@ let gameOver = false;
 let escapedCats = 0;
 let lastCatIndex = -1;
 
+// water level animation
+let waterCurrentY = canvas.height; // текущая Y позиция (верх изображения)
+let waterTargetY  = canvas.height; // целевая Y позиция
+let waveClock     = 0;             // время для покачивания верхнего слоя
+
 // spawn control
 let spawnInterval = SPAWN_INTERVAL_START_MS;
 let spawnTimerId = null;
 
 // preload
+const waterLevelImg = new Image();
+const waterLevelTopImg = new Image();
 const defeat = new Image();
 const defeat1 = new Image();
 let defeatAltFrame = false;
 let hoverDefeat = false;
 const cats = [];
 
-let assetsToLoad = 2 + CAT_COUNT; // defeat + defeat1 + cats
+let assetsToLoad = 4 + CAT_COUNT; // waterLevel + waterLevelTop + defeat + defeat1 + cats
 let assetsLoaded = 0;
 let readyToStart = false;
 
@@ -117,6 +127,9 @@ function resetRunState(){
   gameOver = false;
   escapedCats = 0;
   lastCatIndex = -1;
+  waterCurrentY = canvas.height;
+  waterTargetY  = canvas.height;
+  waveClock     = 0;
 
   spawnInterval = SPAWN_INTERVAL_START_MS;
   stopSpawning();
@@ -168,6 +181,14 @@ function stopLoadingDots(){
     loadingDotsTimerId = null;
   }
 }
+
+waterLevelImg.onload = markLoaded;
+waterLevelImg.onerror = markLoaded;
+waterLevelImg.src = WATER_LEVEL_SRC;
+
+waterLevelTopImg.onload = markLoaded;
+waterLevelTopImg.onerror = markLoaded;
+waterLevelTopImg.src = WATER_LEVEL_TOP_SRC;
 
 defeat.onload = markLoaded;
 defeat.onerror = markLoaded;
@@ -221,6 +242,8 @@ function spawnBug(){
 
   // базовый размер с jitter ±20%
   const baseSize = Math.max(10, Math.floor(BASE_BUG_SIZE * IMAGE_SCALE));
+  const sizeMin = Math.floor(baseSize * (1 - SIZE_JITTER));
+  const sizeMax = Math.floor(baseSize * (1 + SIZE_JITTER));
   const size = Math.max(10, Math.floor(baseSize * randf(1 - SIZE_JITTER, 1 + SIZE_JITTER)));
 
   // угол ±30°
@@ -235,12 +258,14 @@ function spawnBug(){
   const img = cats[catIndex];
 
   // позиция так, чтобы не вылезало (с учётом size)
- const x = Math.random() * (canvas.width - size);
+  const x = Math.random() * (canvas.width - size);
 
-/* появляется немного выше поля */
-const y = -size;
+  /* появляется немного выше поля */
+  const y = -size;
 
-const vy = randf(2.5, 4.5);  // скорость падения
+  // чем больше кот, тем быстрее падает
+  const t = (size - sizeMin) / (sizeMax - sizeMin);
+  const vy = 2.5 + t * 2.0;
 
 bugs.push({ x, y, size, img, rot, vy });
 }
@@ -329,27 +354,23 @@ canvas.addEventListener("touchstart", (e) => {
 
 function clearField(){
   ctx.clearRect(0,0,canvas.width, canvas.height);
-  ctx.fillStyle = "rgba(210,220,238,0.85)";
+  ctx.fillStyle = "rgba(239,243,249,0.85)";
   ctx.fillRect(0,0,canvas.width, canvas.height);
 }
 
 function drawHUD(){
   const hx = canvas.width * 0.02 + 14;
   const hy = canvas.height * 0.02;
-  const scoreY  = 32 + hy;
-  const escapedY = 56 + hy;
+  const scoreY = 32 + hy;
 
-  // measure text widths to size the background pill
   ctx.font = "28px 'Fredoka One', cursive";
   const scoreW = ctx.measureText(`Score: ${score}`).width;
-  ctx.font = "18px 'Fredoka One', cursive";
-  const escapedW = ctx.measureText(`Escaped: ${escapedCats}/${MAX_ESCAPED_CATS}`).width;
 
   const padX = 10, padY = 7;
   const boxX = hx - padX;
-  const boxY = scoreY - 22 - padY;           // ~cap-height above score baseline
-  const boxW = Math.max(scoreW, escapedW) + padX * 2;
-  const boxH = (escapedY - scoreY + 18) + padY + (padY + 4);  // span both lines + padding
+  const boxY = scoreY - 22 - padY;
+  const boxW = scoreW + padX * 2;
+  const boxH = 22 + padY * 2 + 4;
 
   ctx.fillStyle = "rgba(255,255,255,0.52)";
   ctx.beginPath();
@@ -365,13 +386,47 @@ function drawHUD(){
   ctx.textAlign = "left";
   ctx.fillText(`Score: ${score}`, hx, scoreY);
 
-  ctx.fillStyle = "#254160";
-  ctx.font = "18px 'Fredoka One', cursive";
-  ctx.fillText(`Escaped: ${escapedCats}/${MAX_ESCAPED_CATS}`, hx, escapedY);
   ctx.shadowColor = "transparent";
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.shadowBlur = 0;
+}
+
+function drawWaterLevel(){
+  if(!waterLevelImg.complete || waterLevelImg.naturalWidth === 0) return;
+
+  const imgH = waterLevelImg.naturalHeight * (canvas.width / waterLevelImg.naturalWidth);
+
+  // целевая Y: изображение двигается вверх целиком
+  const steps = Math.floor(escapedCats / 2);
+  const rawTarget = canvas.height - steps * WATER_LEVEL_STEP * canvas.height;
+
+  // cap: верх изображения не уходит выше чем 120% его высоты от низа канваса
+  waterTargetY = Math.max(rawTarget, canvas.height - imgH * 1.2);
+
+  // плавный лерп к цели
+  waterCurrentY += (waterTargetY - waterCurrentY) * 0.04;
+
+  if(waterCurrentY >= canvas.height) return; // ещё не видна
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.beginPath();
+  ctx.rect(0, 0, canvas.width, canvas.height);
+  ctx.clip();
+  ctx.drawImage(waterLevelImg, 0, waterCurrentY, canvas.width, imgH);
+  if(waterLevelTopImg.complete && waterLevelTopImg.naturalWidth > 0){
+    const scale   = 1.2;
+    const topImgW = canvas.width * scale;
+    const topImgH = waterLevelTopImg.naturalHeight * (topImgW / waterLevelTopImg.naturalWidth);
+    // покачивание ±5% ширины канваса
+    waveClock += 0.0135; // на 25% медленнее (0.018 * 0.75)
+    const waveX   = Math.sin(waveClock) * canvas.width * 0.05;
+    const topImgX = -(topImgW - canvas.width) / 2 + waveX;
+    const topImgY = waterCurrentY - canvas.height * 0.10; // на 10% выше основного уровня
+    ctx.drawImage(waterLevelTopImg, topImgX, topImgY, topImgW, topImgH);
+  }
+  ctx.restore();
 }
 
 function drawBug(b){
@@ -396,7 +451,8 @@ function drawBugs(){
     if(b.y > canvas.height){
       bugs.splice(i, 1);
       escapedCats++;
-      if(escapedCats >= MAX_ESCAPED_CATS && !gameOver){
+      const waterFill = Math.floor(escapedCats / 2) * WATER_LEVEL_STEP;
+      if(waterFill >= 1.0 && !gameOver){
         gameOver = true;
         stopSpawning();
         if(countdownTimerId) clearInterval(countdownTimerId);
@@ -471,9 +527,10 @@ function loop(){
   clearField();
 
   if(!gameOver){
-  
+
     if(readyToStart && !countdownActive){
       drawBugs();
+      drawWaterLevel();
       drawHUD();
     } else {
       drawCenterOverlay();
@@ -481,6 +538,7 @@ function loop(){
     }
   } else {
     drawBugs();
+    drawWaterLevel();
     drawHUD();
     drawGameOver();
   }
