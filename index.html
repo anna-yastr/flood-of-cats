@@ -20,6 +20,12 @@
       </div>
     </header>
 
+    <div class="scoreBar">
+      <img src="assets/Score_img_1.png" alt="" class="scoreIcon" id="scoreIcon" />
+      <span class="scoreLabel">Score</span>
+      <span class="scoreText" id="scoreText">0</span>
+    </div>
+
     <div class="gameArea">
       <div class="canvasFrame">
         <canvas id="game" width="720" height="720"></canvas>
@@ -28,7 +34,16 @@
     </div>
   </div> <!-- ВАЖНО: закрыли wrap -->
 
-  <script src="game.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/spawn.js"></script>
+  <script src="js/draw-field.js"></script>
+  <script src="js/draw-water.js"></script>
+  <script src="js/draw-cats.js"></script>
+  <script src="js/draw-ui.js"></script>
+  <script src="js/assets.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/main.js"></script>
   <script>
     const _borderSrcs = ['assets/border-image.png', 'assets/border-image1.png'];
     let _borderFrame = 0;
@@ -36,6 +51,13 @@
       _borderFrame = 1 - _borderFrame;
       document.querySelector('.borderImg').src = _borderSrcs[_borderFrame];
     }, 600);
+
+    const _scoreSrcs = ['assets/Score_img_1.png', 'assets/Score_img_2.png'];
+    let _scoreFrame = 0;
+    setInterval(() => {
+      _scoreFrame = 1 - _scoreFrame;
+      document.getElementById('scoreIcon').src = _scoreSrcs[_scoreFrame];
+    }, 900);
   </script>
 </body>
 </html>
