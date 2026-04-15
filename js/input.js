@@ -19,46 +19,137 @@ function pointerPos(evt) {
 function defeatRect() {
   const w = DEFEAT_IMG_W, h = DEFEAT_IMG_H;
   const x = (canvas.width  - w) / 2;
-  const y = (canvas.height - h) / 2 + DEFEAT_IMG_Y_OFFSET;
+  const y = canvas.height * 0.33 - h / 2;
   return { x, y, w, h };
+}
+
+function startRect() {
+  const w = START_IMG_W, h = START_IMG_H;
+  const x = (canvas.width  - w) / 2;
+  const y = canvas.height * 0.33 - h / 2 + START_IMG_Y_OFFSET;
+  return { x, y, w, h };
+}
+
+function tutorialRect() {
+  const hasSb = bestScores.length > 0;
+  const tw = hasSb ? Math.round(TUTORIAL_IMG_W * 0.5) : TUTORIAL_IMG_W;
+  const th = hasSb ? Math.round(TUTORIAL_IMG_H * 0.5) : TUTORIAL_IMG_H;
+  const tx = (canvas.width - tw) / 2;
+  const { y: sy, h: sh } = startRect();
+  const ty = hasSb ? canvas.height * 0.60 + SCOREBOARD_Y_OFFSET + 142 + TUTORIAL_SB_GAP_Y : sy + sh + TUTORIAL_GAP_Y;
+  return { x: tx, y: ty, w: tw, h: th };
 }
 
 function tryHit(mx, my) {
   if (gameOver) return;
-  if (!readyToStart || countdownActive) return;
+  if (!readyToStart || waitingToStart) return;
 
-  // Hit-test each cat using axis-aligned bounding box, back to front
-  for (let i = bugs.length - 1; i >= 0; i--) {
+  // Hit-test in reverse draw order: bugs[0] is drawn last (on top), so check it first
+  for (let i = 0; i < bugs.length; i++) {
     const b   = bugs[i];
     const hit = mx >= b.x && mx <= b.x + b.size && my >= b.y && my <= b.y + b.size;
     if (hit) {
       bugs.splice(i, 1);
-      score += 1;
-      updateScoreDisplay();
-      spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * CLICK_SPEEDUP_FACTOR));
+      if (b.type === 'anchor') {
+        streak = 0;
+        fallSpeedMultiplier = 1.0;
+        updateScoreDisplay();
+      } else {
+        streak = Math.min(streak + 1, 5);
+        score += streak;
+        updateScoreDisplay();
+        spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * CLICK_SPEEDUP_FACTOR));
+        if (streak === 5) {
+          const boost = randf(1.02, 1.15);
+          fallSpeedMultiplier += (boost - 1) * 0.10;
+          for (const bug of bugs) bug.vy *= boost;
+        }
+      }
       return;
     }
   }
 }
 
-// Hover cursor over defeat button
+// Hover cursor over defeat / start button
 canvas.addEventListener("mousemove", (e) => {
-  if (!gameOver) { hoverDefeat = false; canvas.style.cursor = ""; return; }
   const p = pointerPos(e);
-  const r = defeatRect();
-  hoverDefeat = p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
-  canvas.style.cursor = hoverDefeat ? "pointer" : "";
+  if (gameOver) {
+    hoverStart = false;
+    const r = defeatRect();
+    hoverDefeat = p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+    canvas.style.cursor = hoverDefeat ? "pointer" : "";
+    return;
+  }
+  hoverDefeat = false;
+  if (waitingToStart) {
+    if (showTutorial) {
+      hoverStart = hoverTutorial = false;
+      if (!tutClosing) {
+        const bcx = canvas.width - BACK_BTN_MARGIN - BACK_BTN_RADIUS;
+        const bcy = BACK_BTN_MARGIN + BACK_BTN_RADIUS;
+        const bdx = p.x - bcx, bdy = p.y - bcy;
+        hoverBack = bdx * bdx + bdy * bdy <= BACK_BTN_RADIUS * BACK_BTN_RADIUS;
+        canvas.style.cursor = hoverBack ? "pointer" : "";
+      } else {
+        hoverBack = false;
+        canvas.style.cursor = "";
+      }
+      return;
+    }
+    const r = startRect();
+    hoverStart = p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+    hoverTutorial = false;
+    if (!hoverStart) {
+      const tr = tutorialRect();
+      hoverTutorial = p.x >= tr.x && p.x <= tr.x + tr.w && p.y >= tr.y && p.y <= tr.y + tr.h;
+    }
+    canvas.style.cursor = (hoverStart || hoverTutorial) ? "pointer" : "";
+    return;
+  }
+  hoverStart = hoverTutorial = false;
+  canvas.style.cursor = "";
 });
 
-// Click: restart if on defeat button, otherwise try to hit a cat
+// Click: start / restart / hit cat
 canvas.addEventListener("click", (e) => {
   const p = pointerPos(e);
   if (gameOver) {
     const r = defeatRect();
     if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
-      resetRunState();
+      resetRunState(true);
+    }
+    return;
+  }
+  if (waitingToStart) {
+    if (showTutorial) {
+      if (!tutClosing) {
+        const bcx = canvas.width - BACK_BTN_MARGIN - BACK_BTN_RADIUS;
+        const bcy = BACK_BTN_MARGIN + BACK_BTN_RADIUS;
+        const bdx = p.x - bcx, bdy = p.y - bcy;
+        if (bdx * bdx + bdy * bdy <= BACK_BTN_RADIUS * BACK_BTN_RADIUS) {
+          tutClosing = true;
+          hoverBack  = false;
+        }
+      }
       return;
     }
+    const r = startRect();
+    if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
+      waitingToStart = false;
+      hoverStart = false;
+      startSpawning();
+      return;
+    }
+    {
+      const tr = tutorialRect();
+      if (p.x >= tr.x && p.x <= tr.x + tr.w && p.y >= tr.y && p.y <= tr.y + tr.h) {
+        tutCatIndex = Math.floor(Math.random() * cats.length);
+        showTutorial = true;
+        hoverTutorial = false;
+        return;
+      }
+    }
+    return;
   }
   tryHit(p.x, p.y);
 });
@@ -70,9 +161,40 @@ canvas.addEventListener("touchstart", (e) => {
   if (gameOver) {
     const r = defeatRect();
     if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
-      resetRunState();
+      resetRunState(true);
+    }
+    return;
+  }
+  if (waitingToStart) {
+    if (showTutorial) {
+      if (!tutClosing) {
+        const bcx = canvas.width - BACK_BTN_MARGIN - BACK_BTN_RADIUS;
+        const bcy = BACK_BTN_MARGIN + BACK_BTN_RADIUS;
+        const bdx = p.x - bcx, bdy = p.y - bcy;
+        if (bdx * bdx + bdy * bdy <= BACK_BTN_RADIUS * BACK_BTN_RADIUS) {
+          tutClosing = true;
+          hoverBack  = false;
+        }
+      }
       return;
     }
+    const r = startRect();
+    if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
+      waitingToStart = false;
+      hoverStart = false;
+      startSpawning();
+      return;
+    }
+    {
+      const tr = tutorialRect();
+      if (p.x >= tr.x && p.x <= tr.x + tr.w && p.y >= tr.y && p.y <= tr.y + tr.h) {
+        tutCatIndex = Math.floor(Math.random() * cats.length);
+        showTutorial = true;
+        hoverTutorial = false;
+        return;
+      }
+    }
+    return;
   }
   tryHit(p.x, p.y);
 }, { passive: false });
@@ -80,6 +202,6 @@ canvas.addEventListener("touchstart", (e) => {
 // Keyboard: R to restart
 window.addEventListener("keydown", (e) => {
   if (e.key && e.key.toLowerCase() === "r") {
-    resetRunState();
+    resetRunState(true);
   }
 });

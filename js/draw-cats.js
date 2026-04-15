@@ -21,12 +21,21 @@ function drawBugs() {
 
     if (b.y > canvas.height) {
       bugs.splice(i, 1);
+      if (b.type === 'anchor') continue;
+      streak = 0;
+      fallSpeedMultiplier = 1.0;
+      updateScoreDisplay();
       escapedCats++;
-      const waterFill = Math.floor(escapedCats / 2) * WATER_LEVEL_STEP;
+      const waterFill = escapedCats * WATER_LEVEL_STEP;
       if (waterFill >= 1.0 && !gameOver) {
         gameOver = true;
+        recordScore();
         stopSpawning();
         if (countdownTimerId) clearInterval(countdownTimerId);
+        defeatTimeoutId = setTimeout(() => {
+          defeatTimeoutId = null;
+          resetRunState(false);
+        }, 30000);
       }
       continue;
     }

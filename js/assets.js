@@ -6,7 +6,8 @@ function markLoaded() {
   assetsLoaded++;
   if (assetsLoaded >= assetsToLoad) {
     readyToStart = true;
-    startCountdown(); // defined in main.js — called after all scripts load
+    waitingToStart = true;
+    stopLoadingDots();
   }
 }
 
@@ -42,8 +43,53 @@ defeat1.onload  = markLoaded;
 defeat1.onerror = markLoaded;
 defeat1.src = "assets/defeat1.png";
 
-// Alternate defeat frames every 600ms
+// Alternate defeat/start/tutorial frames every 600ms
 setInterval(() => { defeatAltFrame = !defeatAltFrame; }, 600);
+setInterval(() => { startAltFrame  = !startAltFrame;  }, 600);
+setInterval(() => { tutAltFrame    = !tutAltFrame;    }, 600);
+// Alternate scoreboard texture every 800ms
+setInterval(() => { texFrame = !texFrame; }, 800);
+// Scoreboard paw checkerboard blink every 1s
+setInterval(() => { sbPawBlinkFrame = !sbPawBlinkFrame; }, 1000);
+// NEW! text blink every 600ms
+setInterval(() => { newBlinkFrame = !newBlinkFrame; }, 600);
+
+// Load scoreboard textures
+tex1.onload  = markLoaded;
+tex1.onerror = markLoaded;
+tex1.src = TEXTURE1_SRC;
+
+tex2.onload  = markLoaded;
+tex2.onerror = markLoaded;
+tex2.src = TEXTURE2_SRC;
+
+// Load start button images
+start1.onload  = markLoaded;
+start1.onerror = markLoaded;
+start1.src = START_SRC1;
+
+start2.onload  = markLoaded;
+start2.onerror = markLoaded;
+start2.src = START_SRC2;
+
+// Load tutorial button images
+tut1.onload  = markLoaded;
+tut1.onerror = markLoaded;
+tut1.src = TUTORIAL_SRC1;
+
+tut2.onload  = markLoaded;
+tut2.onerror = markLoaded;
+tut2.src = TUTORIAL_SRC2;
+
+// Load anchor image
+anchorImg.onload  = markLoaded;
+anchorImg.onerror = markLoaded;
+anchorImg.src = ANCHOR_SRC;
+
+// Load combo paw image
+comboPawImg.onload  = markLoaded;
+comboPawImg.onerror = markLoaded;
+comboPawImg.src = COMBO_PAW_SRC;
 
 // Load all cat images
 for (let i = 1; i <= CAT_COUNT; i++) {

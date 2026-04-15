@@ -1,2 +1,3 @@
-# qa-hell
-Mini game about QA work everyday.
+# flood-of-cats
+
+Mini game about cats trying to flood your screen.

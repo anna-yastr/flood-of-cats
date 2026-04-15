@@ -25,14 +25,18 @@
       <span class="scoreLabel">Score</span>
       <span class="scoreText" id="scoreText">0</span>
     </div>
+    <span class="streakBonus" id="streakBonus"></span>
 
     <div class="gameArea">
       <div class="canvasFrame">
         <canvas id="game" width="720" height="720"></canvas>
+        <canvas id="pawCanvas"></canvas>
         <img class="borderImg" src="assets/border-image.png" alt="" />
       </div>
     </div>
   </div> <!-- ВАЖНО: закрыли wrap -->
+
+  <button id="resetScoreBtn">Reset all score</button>
 
   <script src="js/settings.js"></script>
   <script src="js/state.js"></script>

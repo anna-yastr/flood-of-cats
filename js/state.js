@@ -8,9 +8,12 @@ const ctx = canvas.getContext("2d");
 // Active cats on screen
 let bugs = [];
 let score = 0;
+let streak = 0;
 let gameOver = false;
 let escapedCats = 0;
 let lastCatIndex = -1;
+let lastSpawnType = null; // 'cat' | 'anchor' — prevents same object twice in a row
+let fallSpeedMultiplier = 1.0; // accumulates on each combo-5 hit
 
 // Water level animation
 let waterCurrentY = canvas.height; // current Y position (top of image)
@@ -28,14 +31,42 @@ const defeat  = new Image();
 const defeat1 = new Image();
 let defeatAltFrame = false;
 let hoverDefeat = false;
+const start1 = new Image();
+const start2 = new Image();
+let startAltFrame = false;
+let hoverStart = false;
+const tut1 = new Image();
+const tut2 = new Image();
+let tutAltFrame  = false;
+let hoverTutorial = false;
+let showTutorial      = false;
+let hoverBack         = false;
+let tutCatIndex       = 0;
+let tutClosing        = false; // water-fill exit animation active
+let tutCloseProgress  = 0;    // 0..1, water fills from 10% to 100%
+const tex1 = new Image();
+const tex2 = new Image();
+let texFrame = false;
+let sbPawBlinkFrame = false; // toggles every 1s for checkerboard blink
+let newBlinkFrame   = false; // toggles every 400ms for NEW! blink
 const cats = [];
+const anchorImg   = new Image();
+const comboPawImg = new Image();
+
+// Paw border overlay canvas
+const pawCanvas = document.getElementById('pawCanvas');
+const pawCtx    = pawCanvas.getContext('2d');
 
 // Asset loading progress
-let assetsToLoad = 4 + CAT_COUNT; // waterLevel + waterLevelTop + defeat + defeat1 + cats
+let assetsToLoad = 12 + CAT_COUNT; // waterLevel + waterLevelTop + defeat + defeat1 + anchor + comboPaw + start1 + start2 + tex1 + tex2 + tut1 + tut2 + cats
 let assetsLoaded = 0;
 let readyToStart = false;
+let waitingToStart = false;   // assets loaded, start button not yet clicked
+let bestScores = JSON.parse(localStorage.getItem('flood_best_scores') || '[]');
+let newScoreIndex = -1; // index in bestScores of the just-recorded score, -1 = none
+let defeatTimeoutId = null;   // 30-second auto-switch from defeat to start screen
 
-// Countdown before game starts
+// Countdown before game starts (kept for compatibility)
 let countdown = 3;
 let countdownActive = false;
 let countdownTimerId = null;

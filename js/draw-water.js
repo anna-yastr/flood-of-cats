@@ -2,17 +2,34 @@
    DRAW: WATER LEVEL
    ========================= */
 
+function drawFieldTexture() {
+  if (!waterLevelTopImg.complete || waterLevelTopImg.naturalWidth === 0) return;
+
+  const scale   = 1.2;
+  const imgW    = canvas.width * scale;
+  const imgH    = waterLevelTopImg.naturalHeight * (imgW / waterLevelTopImg.naturalWidth);
+  const waveX   = Math.sin(Date.now() / 2000) * canvas.width * 0.05;
+  const imgX    = -(imgW - canvas.width) / 2 + waveX;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.globalAlpha = 0.20;
+  ctx.drawImage(waterLevelTopImg, imgX, -100, imgW, imgH);
+  ctx.restore();
+}
+
 function drawWaterLevel() {
   if (!waterLevelImg.complete || waterLevelImg.naturalWidth === 0) return;
 
   const imgH = waterLevelImg.naturalHeight * (canvas.width / waterLevelImg.naturalWidth);
 
   // Move image up based on how many cats escaped
-  const steps     = Math.floor(escapedCats / 2);
+  const steps     = escapedCats;
   const rawTarget = canvas.height - steps * WATER_LEVEL_STEP * canvas.height;
 
-  // Cap: image top can't go higher than 120% of its own height from the bottom
-  waterTargetY = Math.max(rawTarget, canvas.height - imgH * 1.2);
+  // Cap: bottom edge of image can't go above 120% of canvas height
+  // i.e. waterCurrentY + imgH >= canvas.height * 1.2
+  waterTargetY = Math.max(rawTarget, canvas.height * 1.2 - imgH);
 
   // Smooth lerp toward target
   waterCurrentY += (waterTargetY - waterCurrentY) * 0.04;

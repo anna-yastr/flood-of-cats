@@ -44,24 +44,36 @@ function spawnBug() {
   const sizeMax  = Math.floor(baseSize * (1 + SIZE_JITTER));
   const size     = Math.max(10, Math.floor(baseSize * randf(1 - SIZE_JITTER, 1 + SIZE_JITTER)));
 
-  // Random rotation ±30°
-  const rot = degToRad(randf(-ROTATE_DEG, ROTATE_DEG));
-
-  // Pick a random cat image, avoid repeating the last one
-  let catIndex = randi(cats.length);
-  if (cats.length > 1 && catIndex === lastCatIndex) {
-    catIndex = (catIndex + 1 + randi(cats.length - 1)) % cats.length;
-  }
-  lastCatIndex = catIndex;
-  const img = cats[catIndex];
-
   // Position: random X, starts just above the canvas
   const x = Math.random() * (canvas.width - size);
   const y = -size;
 
-  // Bigger cats fall faster
+  // Bigger objects fall faster
   const t  = (size - sizeMin) / (sizeMax - sizeMin);
-  const vy = 2.5 + t * 2.0;
 
-  bugs.push({ x, y, size, img, rot, vy });
+  // Decide: anchor or cat
+  // Anchor chance is random in [MIN, MAX] each spawn, and anchor can't appear twice in a row
+  const anchorChance = randf(ANCHOR_SPAWN_CHANCE_MIN, ANCHOR_SPAWN_CHANCE_MAX);
+  const spawnAnchor  = lastSpawnType !== 'anchor' && Math.random() < anchorChance;
+
+  if (spawnAnchor) {
+    // Anchor: no rotation, falls at cat speed
+    const vy = (2.5 + t * 2.0) * fallSpeedMultiplier;
+    bugs.push({ x, y, size, img: anchorImg, rot: 0, vy, type: 'anchor' });
+    lastSpawnType = 'anchor';
+  } else {
+    // Random rotation ±30°
+    const rot = degToRad(randf(-ROTATE_DEG, ROTATE_DEG));
+
+    // Pick a random cat image, never repeat the same index as last spawn
+    let catIndex = randi(cats.length);
+    if (cats.length > 1 && catIndex === lastCatIndex) {
+      catIndex = (catIndex + 1 + randi(cats.length - 1)) % cats.length;
+    }
+    lastCatIndex  = catIndex;
+    lastSpawnType = 'cat';
+
+    const vy = (2.5 + t * 2.0) * fallSpeedMultiplier;
+    bugs.push({ x, y, size, img: cats[catIndex], rot, vy, type: 'cat' });
+  }
 }
