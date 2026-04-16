@@ -159,7 +159,7 @@ function drawBackButton() {
   // Animated border — drawn after fill so it appears on top
   const bShift = tutAltFrame ? 1 : -1;
   ctx.beginPath();
-  ctx.arc(bShift, -bShift, 24, 0, Math.PI * 2);
+  ctx.arc(bShift, -bShift, r - 2, 0, Math.PI * 2);
   ctx.strokeStyle = '#E2E6EC';
   ctx.lineWidth   = 2.5;
   ctx.stroke();
@@ -332,19 +332,22 @@ function drawScoreboard() {
   const circleR = 12;
 
   ctx.font = `24px 'Fredoka One', cursive`;
+
+  // Pre-measure all scores to find the widest, so medal column stays fixed
+  const scoreStrs = [0, 1, 2].map(i => String(bestScores[i] !== undefined ? bestScores[i] : '—'));
+  const maxScoreW = Math.max(...scoreStrs.map(s => ctx.measureText(s).width));
+
+  // Fixed layout based on widest score — medals always at the same X
+  const groupW   = circleR * 2 + 12 + maxScoreW;
+  const groupX   = canvas.width / 2 - groupW / 2;
+  const circleCX = groupX + circleR;
+  const scoreX   = groupX + circleR * 2 + 12;
+
   for (let i = 0; i < 3; i++) {
-    const val    = bestScores[i] !== undefined ? bestScores[i] : '—';
-    const rowY   = sbY + 46 + i * 31;
-    const textCY = rowY + 10; // vertical centre of row (textBaseline = top)
-
-    const scoreStr = String(val);
+    const scoreStr = scoreStrs[i];
     const scoreW   = ctx.measureText(scoreStr).width;
-
-    // Centre the [circle + gap + score] group
-    const groupW  = circleR * 2 + 12 + scoreW;
-    const groupX  = canvas.width / 2 - groupW / 2;
-    const circleCX = groupX + circleR;
-    const scoreX   = groupX + circleR * 2 + 12;
+    const rowY     = sbY + 46 + i * 31;
+    const textCY   = rowY + 10; // vertical centre of row (textBaseline = top)
 
     // Medal circle
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;

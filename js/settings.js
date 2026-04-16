@@ -41,7 +41,7 @@ const TUTORIAL_GAP_Y    = -100; // px offset from bottom of start button (negati
 const TUTORIAL_SB_GAP_Y =   0; // px gap between scoreboard bottom and tutorial button
 
 // Back button on tutorial screen
-const BACK_BTN_RADIUS = 26; // circle radius in px
+const BACK_BTN_RADIUS = 39; // circle radius in px
 const BACK_BTN_MARGIN = 18; // distance from canvas edges
 const TUTORIAL_SRC1  = "assets/tutorial1.png";
 const TUTORIAL_SRC2  = "assets/tutorial2.png";
@@ -70,3 +70,16 @@ const COMBO_PAW_SPEED   = 50;   // px/s — march speed at streak 5
 const COMBO_PAW_BORDER  = 30;   // px — strip width outside canvasFrame on each side
 const ANCHOR_SPAWN_CHANCE_MIN = 0.08; // min chance per spawn to be an anchor
 const ANCHOR_SPAWN_CHANCE_MAX = 0.16; // max chance per spawn to be an anchor
+const COMBO_WINDOW_MS   = 6000; // max ms for 5 hits to count as a fast combo
+const COMBO_SPEED_BOOST = 1.3;  // vy multiplier applied to one random cat on fast combo-5
+
+// Vortex drain effect (activates on game over)
+const VORTEX_TANGENTIAL = 0.30;  // ускорение по касательной (закручивание)
+const VORTEX_INWARD     = 0.20;  // ускорение к центру (втягивание)
+const VORTEX_FRICTION   = 0.96;  // затухание скорости за кадр
+const VORTEX_CENTER_X   = 0.5;   // положение центра воронки (доля ширины)
+const VORTEX_CENTER_Y   = 0.52;  // положение центра воронки (доля высоты)
+
+// Pixel-perfect hit detection debug
+// When true: draws bounding box + last clicked pixel highlight on every frame
+const DEBUG_PIXEL_HIT = false;

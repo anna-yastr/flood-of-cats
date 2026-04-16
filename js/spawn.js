@@ -73,7 +73,9 @@ function spawnBug() {
     lastCatIndex  = catIndex;
     lastSpawnType = 'cat';
 
-    const vy = (2.5 + t * 2.0) * fallSpeedMultiplier;
+    const comboBoost = comboSpeedBoostPending ? COMBO_SPEED_BOOST : 1;
+    comboSpeedBoostPending = false;
+    const vy = (2.5 + t * 2.0) * fallSpeedMultiplier * comboBoost;
     bugs.push({ x, y, size, img: cats[catIndex], rot, vy, type: 'cat' });
   }
 }

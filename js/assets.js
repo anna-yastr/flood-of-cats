@@ -81,23 +81,41 @@ tut2.onload  = markLoaded;
 tut2.onerror = markLoaded;
 tut2.src = TUTORIAL_SRC2;
 
-// Load anchor image
-anchorImg.onload  = markLoaded;
-anchorImg.onerror = markLoaded;
-anchorImg.src = ANCHOR_SRC;
+// Load anchor image (src assigned after extractAlpha is defined below)
 
 // Load combo paw image
 comboPawImg.onload  = markLoaded;
 comboPawImg.onerror = markLoaded;
 comboPawImg.src = COMBO_PAW_SRC;
 
+// Extracts alpha channel from an image into img._alpha (Uint8Array),
+// img._aw / img._ah — natural dimensions. Used for pixel-perfect hit detection.
+function extractAlpha(img) {
+  const oc   = document.createElement('canvas');
+  oc.width   = img.naturalWidth;
+  oc.height  = img.naturalHeight;
+  const octx = oc.getContext('2d');
+  octx.drawImage(img, 0, 0);
+  const data    = octx.getImageData(0, 0, oc.width, oc.height).data;
+  const alpha   = new Uint8Array(oc.width * oc.height);
+  for (let i = 0; i < alpha.length; i++) alpha[i] = data[i * 4 + 3];
+  img._alpha = alpha;
+  img._aw    = oc.width;
+  img._ah    = oc.height;
+}
+
 // Load all cat images
 for (let i = 1; i <= CAT_COUNT; i++) {
   const img = new Image();
-  img.onload  = markLoaded;
+  img.onload  = () => { extractAlpha(img); markLoaded(); };
   img.onerror = markLoaded;
   img.src = `${CAT_PREFIX}${i}.png`;
   cats.push(img);
 }
+
+// Extract alpha for anchor (src set here so onload is guaranteed to fire after handler is assigned)
+anchorImg.onload  = () => { extractAlpha(anchorImg); markLoaded(); };
+anchorImg.onerror = markLoaded;
+anchorImg.src     = ANCHOR_SRC;
 
 startLoadingDots();

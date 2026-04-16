@@ -2,6 +2,43 @@
    INPUT HANDLING
    ========================= */
 
+// Pixel-perfect hit detection via inverse rotation transform + alpha lookup.
+// Falls back to bounding box if alpha data isn't ready yet.
+function pixelHit(b, mx, my) {
+  // 1. Bounding box early exit
+  if (mx < b.x || mx > b.x + b.size || my < b.y || my > b.y + b.size) return false;
+
+  const img = b.img;
+  if (!img._alpha) return true; // alpha not ready — bounding box fallback
+
+  // 2. Back-transform (mx, my) into image local space
+  const cx  = b.x + b.size / 2;
+  const cy  = b.y + b.size / 2;
+  const dx  = mx - cx;
+  const dy  = my - cy;
+  const cos = Math.cos(-b.rot);
+  const sin = Math.sin(-b.rot);
+  const lx  = dx * cos - dy * sin + b.size / 2;
+  const ly  = dx * sin + dy * cos + b.size / 2;
+
+  // 3. Map from rendered size to natural image size
+  const px = Math.floor(lx / b.size * img._aw);
+  const py = Math.floor(ly / b.size * img._ah);
+
+  if (px < 0 || py < 0 || px >= img._aw || py >= img._ah) return false;
+
+  // 4. Alpha lookup (threshold 10 to ignore antialias fringe)
+  const hit = img._alpha[py * img._aw + px] > 10;
+
+  if (DEBUG_PIXEL_HIT) {
+    // Store last click info for the debug overlay drawn in drawBugs
+    window._dbgClick = { mx, my, bx: b.x, by: b.y, bsize: b.size, px, py,
+                         alpha: img._alpha[py * img._aw + px], hit };
+  }
+
+  return hit;
+}
+
 function pointerPos(evt) {
   const rect    = canvas.getBoundingClientRect();
   const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
@@ -47,22 +84,29 @@ function tryHit(mx, my) {
   // Hit-test in reverse draw order: bugs[0] is drawn last (on top), so check it first
   for (let i = 0; i < bugs.length; i++) {
     const b   = bugs[i];
-    const hit = mx >= b.x && mx <= b.x + b.size && my >= b.y && my <= b.y + b.size;
+    const hit = pixelHit(b, mx, my);
     if (hit) {
       bugs.splice(i, 1);
       if (b.type === 'anchor') {
         streak = 0;
+        streakHitTimes = [];
         fallSpeedMultiplier = 1.0;
         updateScoreDisplay();
       } else {
+        const now = Date.now();
+        streakHitTimes.push(now);
         streak = Math.min(streak + 1, 5);
         score += streak;
         updateScoreDisplay();
         spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * CLICK_SPEEDUP_FACTOR));
         if (streak === 5) {
+          // Fast combo: 5 hits within COMBO_WINDOW_MS → next spawned cat gets ×COMBO_SPEED_BOOST
+          if (streakHitTimes.length >= 5 &&
+              now - streakHitTimes[streakHitTimes.length - 5] <= COMBO_WINDOW_MS) {
+            comboSpeedBoostPending = true;
+          }
           const boost = randf(1.02, 1.15);
           fallSpeedMultiplier += (boost - 1) * 0.10;
-          for (const bug of bugs) bug.vy *= boost;
         }
       }
       return;

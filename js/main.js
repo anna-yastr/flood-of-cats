@@ -33,6 +33,8 @@ function resetRunState(startImmediately = false) {
   lastCatIndex = -1;
   lastSpawnType = null;
   fallSpeedMultiplier = 1.0;
+  streakHitTimes = [];
+  comboSpeedBoostPending = false;
   newScoreIndex = -1;
 
   waterCurrentY = canvas.height;

@@ -14,6 +14,8 @@ let escapedCats = 0;
 let lastCatIndex = -1;
 let lastSpawnType = null; // 'cat' | 'anchor' — prevents same object twice in a row
 let fallSpeedMultiplier = 1.0; // accumulates on each combo-5 hit
+let streakHitTimes = []; // timestamps of hits in current streak (for fast-combo detection)
+let comboSpeedBoostPending = false; // next spawned cat gets ×COMBO_SPEED_BOOST
 
 // Water level animation
 let waterCurrentY = canvas.height; // current Y position (top of image)
