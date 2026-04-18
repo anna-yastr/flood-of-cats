@@ -31,8 +31,8 @@ const START_IMG_W = 449;
 const START_IMG_H = 449;
 const START_IMG_Y_OFFSET  = -50; // px, negative = higher
 const SCOREBOARD_Y_OFFSET = -40; // px, negative = higher
-const START_SRC1 = "assets/start1.png";
-const START_SRC2 = "assets/start2.png";
+const START_SRC1 = "assets/start1.webp";
+const START_SRC2 = "assets/start2.webp";
 
 // Tutorial button sizing (80% of start button)
 const TUTORIAL_IMG_W = Math.round(START_IMG_W * 0.8);
@@ -43,26 +43,26 @@ const TUTORIAL_SB_GAP_Y =   0; // px gap between scoreboard bottom and tutorial 
 // Back button on tutorial screen
 const BACK_BTN_RADIUS = 39; // circle radius in px
 const BACK_BTN_MARGIN = 18; // distance from canvas edges
-const TUTORIAL_SRC1  = "assets/tutorial1.png";
-const TUTORIAL_SRC2  = "assets/tutorial2.png";
+const TUTORIAL_SRC1  = "assets/tutorial1.webp";
+const TUTORIAL_SRC2  = "assets/tutorial2.webp";
 
 // Assets
-const DEFEAT_SRC = "assets/defeat.png";
+const DEFEAT_SRC = "assets/defeat2.webp";
 const CAT_COUNT = 6;
 const CAT_PREFIX = "assets/cat";
-const WATER_LEVEL_SRC = "assets/Water_level.png";
-const WATER_LEVEL_TOP_SRC = "assets/Water_level_top.png";
+const WATER_LEVEL_SRC = "assets/Water_level.webp";
+const WATER_LEVEL_TOP_SRC = "assets/Water_level_top.webp";
 const WATER_LEVEL_STEP = 0.1;   // +10% высоты канваса за каждого пропущенного кота → 10 котов = 100%
 
 // Anchor
-const ANCHOR_SRC = "assets/anchor1.png";
+const ANCHOR_SRC = "assets/anchor1.webp";
 
 // Scoreboard textures
-const TEXTURE1_SRC = "assets/texture1.png";
-const TEXTURE2_SRC = "assets/texture2.png";
+const TEXTURE1_SRC = "assets/texture1.webp";
+const TEXTURE2_SRC = "assets/texture2.webp";
 
 // Combo paw border (streak >= 3)
-const COMBO_PAW_SRC     = "assets/combo_paw.png";
+const COMBO_PAW_SRC     = "assets/combo_paw.webp";
 const COMBO_PAW_SIZE    = 29;   // px — base rendered size (42 × 0.7)
 const COMBO_PAW_SPACING = 58;   // px — distance between paw centres
 const COMBO_PAW_SPEED_4 = 15;   // px/s — march speed at streak 4

@@ -26,6 +26,8 @@ function resetRunState(startImmediately = false) {
   }
 
   bugs         = [];
+  hitEffects   = [];
+  dyingBugs    = [];
   score        = 0;
   streak       = 0;
   gameOver     = false;

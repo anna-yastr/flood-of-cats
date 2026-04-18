@@ -86,6 +86,8 @@ function tryHit(mx, my) {
     const b   = bugs[i];
     const hit = pixelHit(b, mx, my);
     if (hit) {
+      hitEffects.push({ x: b.x + b.size / 2, y: b.y + b.size / 2, r: b.size * 0.32, life: 1.0 });
+      dyingBugs.push({ x: b.x, y: b.y, size: b.size, img: b.img, rot: b.rot, tx: mx, ty: my, life: 1.0 });
       bugs.splice(i, 1);
       if (b.type === 'anchor') {
         streak = 0;

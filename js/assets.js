@@ -41,7 +41,7 @@ defeat.src = DEFEAT_SRC;
 
 defeat1.onload  = markLoaded;
 defeat1.onerror = markLoaded;
-defeat1.src = "assets/defeat1.png";
+defeat1.src = "assets/defeat1.webp";
 
 // Alternate defeat/start/tutorial frames every 600ms
 setInterval(() => { defeatAltFrame = !defeatAltFrame; }, 600);
@@ -109,7 +109,7 @@ for (let i = 1; i <= CAT_COUNT; i++) {
   const img = new Image();
   img.onload  = () => { extractAlpha(img); markLoaded(); };
   img.onerror = markLoaded;
-  img.src = `${CAT_PREFIX}${i}.png`;
+  img.src = `${CAT_PREFIX}${i}.webp`;
   cats.push(img);
 }
 

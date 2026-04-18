@@ -7,6 +7,8 @@ const ctx = canvas.getContext("2d");
 
 // Active cats on screen
 let bugs = [];
+let hitEffects  = []; // click pop effects: { x, y, r, life }
+let dyingBugs   = []; // swirling-out cats: { x, y, size, img, rot, tx, ty, life }
 let score = 0;
 let streak = 0;
 let gameOver = false;

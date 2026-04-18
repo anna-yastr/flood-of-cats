@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" />
-  <link rel="preload" href="assets/border-image.png" as="image" />
-  <link rel="preload" href="assets/border-image1.png" as="image" />
+  <link rel="preload" href="assets/border-image.webp" as="image" />
+  <link rel="preload" href="assets/border-image1.webp" as="image" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -16,12 +16,12 @@
   <div class="wrap">
     <header class="top">
       <div class="titleBlock">
-        <img src="assets/title.png" alt="Flood of Cats" class="titleImg" />
+        <img src="assets/title.webp" alt="Flood of Cats" class="titleImg" />
       </div>
     </header>
 
     <div class="scoreBar">
-      <img src="assets/Score_img_1.png" alt="" class="scoreIcon" id="scoreIcon" />
+      <img src="assets/Score_img_1.webp" alt="" class="scoreIcon" id="scoreIcon" />
       <span class="scoreLabel">Score</span>
       <span class="scoreText" id="scoreText">0</span>
     </div>
@@ -31,7 +31,7 @@
       <div class="canvasFrame">
         <canvas id="game" width="720" height="720"></canvas>
         <canvas id="pawCanvas"></canvas>
-        <img class="borderImg" src="assets/border-image.png" alt="" />
+        <img class="borderImg" src="assets/border-image.webp" alt="" />
       </div>
     </div>
   </div> <!-- ВАЖНО: закрыли wrap -->
@@ -49,14 +49,14 @@
   <script src="js/input.js"></script>
   <script src="js/main.js"></script>
   <script>
-    const _borderSrcs = ['assets/border-image.png', 'assets/border-image1.png'];
+    const _borderSrcs = ['assets/border-image.webp', 'assets/border-image1.webp'];
     let _borderFrame = 0;
     setInterval(() => {
       _borderFrame = 1 - _borderFrame;
       document.querySelector('.borderImg').src = _borderSrcs[_borderFrame];
     }, 600);
 
-    const _scoreSrcs = ['assets/Score_img_1.png', 'assets/Score_img_2.png'];
+    const _scoreSrcs = ['assets/Score_img_1.webp', 'assets/Score_img_2.webp'];
     let _scoreFrame = 0;
     setInterval(() => {
       _scoreFrame = 1 - _scoreFrame;
