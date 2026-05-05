@@ -89,7 +89,7 @@ function drawTutorialScreen() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const leftX   = 60;
-  const imgSize = 189; // 140 * 1.35
+  const imgSize = 236; // 189 * 1.25
   const textX   = leftX + imgSize + 35;
 
   // — HOW TO PLAY title —
@@ -102,9 +102,9 @@ function drawTutorialScreen() {
   ctx.textAlign = 'left';
 
   // — Row 1: random cat + "click cats" —
-  const row1CY = 165;
+  const row1CY = 197; // 165 + 32 for bigger margin
   const cat = cats[tutCatIndex];
-  if (cat && cat.complete && cat.naturalWidth > 0) {
+  if (cat && (cat.naturalWidth > 0 || cat.width > 0)) {
     ctx.drawImage(cat, leftX, row1CY - imgSize / 2, imgSize, imgSize);
   }
   ctx.fillStyle = '#254160';
@@ -112,9 +112,10 @@ function drawTutorialScreen() {
   ctx.fillText('click cats', textX, row1CY);
 
   // — Row 2: anchor + "DON'T click anchors" —
-  const row2CY = 379;
+  const row2CY = 411; // 379 + 32
+  const anchorSize = Math.round(imgSize * 0.9); // 10% smaller
   if (anchorImg.complete && anchorImg.naturalWidth > 0) {
-    ctx.drawImage(anchorImg, leftX, row2CY - imgSize / 2, imgSize, imgSize);
+    ctx.drawImage(anchorImg, leftX, row2CY - anchorSize / 2, anchorSize, anchorSize);
   }
   ctx.font = `34px 'Fredoka One', cursive`;
   const dontStr = "DON'T ";
@@ -127,11 +128,11 @@ function drawTutorialScreen() {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#254160';
   ctx.font      = `30px 'Fredoka One', cursive`;
-  ctx.fillText('keep clicking cats', canvas.width / 2, 503);
+  ctx.fillText('keep clicking cats', canvas.width / 2, 535); // 503 + 32
   ctx.font = `38px 'Fredoka One', cursive`;
-  ctx.fillText('BEFORE', canvas.width / 2, 543);
+  ctx.fillText('BEFORE', canvas.width / 2, 575); // 543 + 32
   ctx.font = `30px 'Fredoka One', cursive`;
-  ctx.fillText('water floods the screen', canvas.width / 2, 583);
+  ctx.fillText('water floods the screen', canvas.width / 2, 615); // 583 + 32
 
   ctx.textAlign    = 'left';
   ctx.textBaseline = 'alphabetic';
@@ -194,7 +195,7 @@ function drawCenterOverlay() {
   ctx.fillStyle = "rgba(40,100,220,0.082)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  if (!readyToStart) {
+  if (!uiReady) {
     ctx.shadowColor   = "rgba(10,25,60,0.35)";
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 1;
@@ -252,6 +253,14 @@ function drawCenterOverlay() {
     if (tutImg.complete && tutImg.naturalWidth > 0) {
       ctx.drawImage(tutImg, tdx, tdy, tdw, tdh);
     }
+  }
+
+  if (!readyToStart) {
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(37,65,96,0.45)";
+    ctx.font      = `14px 'Fredoka One', cursive`;
+    ctx.fillText(`Loading${".".repeat(loadingDots)}`, canvas.width / 2, canvas.height - 20);
+    ctx.textAlign = "left";
   }
 }
 

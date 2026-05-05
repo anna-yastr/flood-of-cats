@@ -62,11 +62,21 @@ const pawCanvas = document.getElementById('pawCanvas');
 const pawCtx    = pawCanvas.getContext('2d');
 
 // Asset loading progress
-let assetsToLoad = 12 + CAT_COUNT; // waterLevel + waterLevelTop + defeat + defeat1 + anchor + comboPaw + start1 + start2 + tex1 + tex2 + tut1 + tut2 + cats
+let assetsToLoad = 13; // waterLevel + waterLevelTop + defeat + defeat1 + anchor + comboPaw + start1 + start2 + tex1 + tex2 + tut1 + tut2 + catAtlas
 let assetsLoaded = 0;
-let readyToStart = false;
-let waitingToStart = false;   // assets loaded, start button not yet clicked
+let uiReady = false;           // start+tutorial buttons loaded → show start screen
+let uiAssetsLoaded = 0;
+const uiAssetsToLoad = 4;     // start1, start2, tut1, tut2
+let readyToStart = false;     // all gameplay assets loaded → game can start
+let waitingToStart = false;   // player is on start screen, hasn't clicked yet
 let bestScores = JSON.parse(localStorage.getItem('flood_best_scores') || '[]');
+const SOUND_ENABLED_STORAGE_KEY = 'flood_sound_enabled';
+let soundEnabled = localStorage.getItem(SOUND_ENABLED_STORAGE_KEY);
+if (soundEnabled === null) {
+  soundEnabled = true;
+} else {
+  soundEnabled = soundEnabled === '1';
+}
 let newScoreIndex = -1; // index in bestScores of the just-recorded score, -1 = none
 let defeatTimeoutId = null;   // 30-second auto-switch from defeat to start screen
 

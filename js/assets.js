@@ -6,9 +6,50 @@ function markLoaded() {
   assetsLoaded++;
   if (assetsLoaded >= assetsToLoad) {
     readyToStart = true;
-    waitingToStart = true;
     stopLoadingDots();
   }
+}
+
+function playMeowSound() {
+  if (!soundEnabled || typeof MEOW_SOUND_SOURCES === 'undefined' || MEOW_SOUND_SOURCES.length === 0) return;
+  const index = Math.floor(Math.random() * MEOW_SOUND_SOURCES.length);
+  const audio = new Audio(MEOW_SOUND_SOURCES[index]);
+  audio.volume = Math.min(1, Math.max(0, MEOW_VOLUME));
+  audio.play().catch(() => {});
+}
+
+function playErrorSound() {
+  if (!soundEnabled || typeof ERROR_SOUND_SRC === 'undefined' || !ERROR_SOUND_SRC) return;
+  const audio = new Audio(ERROR_SOUND_SRC);
+  audio.volume = Math.min(1, Math.max(0, ERROR_VOLUME));
+  audio.play().catch(() => {});
+}
+
+function updateSoundToggleButton() {
+  const btn = document.getElementById('soundToggleBtn');
+  if (!btn) return;
+  btn.textContent = soundEnabled ? 'Sound ON' : 'Sound OFF';
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem(SOUND_ENABLED_STORAGE_KEY, soundEnabled ? '1' : '0');
+  updateSoundToggleButton();
+}
+
+const soundToggleBtn = document.getElementById('soundToggleBtn');
+if (soundToggleBtn) {
+  soundToggleBtn.addEventListener('click', toggleSound);
+  updateSoundToggleButton();
+}
+
+function markUiLoaded() {
+  uiAssetsLoaded++;
+  if (uiAssetsLoaded >= uiAssetsToLoad) {
+    uiReady = true;
+    waitingToStart = true;
+  }
+  markLoaded();
 }
 
 function startLoadingDots() {
@@ -63,22 +104,22 @@ tex2.onload  = markLoaded;
 tex2.onerror = markLoaded;
 tex2.src = TEXTURE2_SRC;
 
-// Load start button images
-start1.onload  = markLoaded;
-start1.onerror = markLoaded;
+// Load start button images — critical UI assets (show start screen as soon as these 4 are ready)
+start1.onload  = markUiLoaded;
+start1.onerror = markUiLoaded;
 start1.src = START_SRC1;
 
-start2.onload  = markLoaded;
-start2.onerror = markLoaded;
+start2.onload  = markUiLoaded;
+start2.onerror = markUiLoaded;
 start2.src = START_SRC2;
 
 // Load tutorial button images
-tut1.onload  = markLoaded;
-tut1.onerror = markLoaded;
+tut1.onload  = markUiLoaded;
+tut1.onerror = markUiLoaded;
 tut1.src = TUTORIAL_SRC1;
 
-tut2.onload  = markLoaded;
-tut2.onerror = markLoaded;
+tut2.onload  = markUiLoaded;
+tut2.onerror = markUiLoaded;
 tut2.src = TUTORIAL_SRC2;
 
 // Load anchor image (src assigned after extractAlpha is defined below)
@@ -88,30 +129,43 @@ comboPawImg.onload  = markLoaded;
 comboPawImg.onerror = markLoaded;
 comboPawImg.src = COMBO_PAW_SRC;
 
-// Extracts alpha channel from an image into img._alpha (Uint8Array),
-// img._aw / img._ah — natural dimensions. Used for pixel-perfect hit detection.
+// Extracts alpha channel from an image or canvas into ._alpha (Uint8Array),
+// ._aw / ._ah — dimensions. Used for pixel-perfect hit detection.
 function extractAlpha(img) {
   const oc   = document.createElement('canvas');
-  oc.width   = img.naturalWidth;
-  oc.height  = img.naturalHeight;
+  oc.width   = img.naturalWidth  || img.width;
+  oc.height  = img.naturalHeight || img.height;
   const octx = oc.getContext('2d');
   octx.drawImage(img, 0, 0);
-  const data    = octx.getImageData(0, 0, oc.width, oc.height).data;
-  const alpha   = new Uint8Array(oc.width * oc.height);
+  const data  = octx.getImageData(0, 0, oc.width, oc.height).data;
+  const alpha = new Uint8Array(oc.width * oc.height);
   for (let i = 0; i < alpha.length; i++) alpha[i] = data[i * 4 + 3];
   img._alpha = alpha;
   img._aw    = oc.width;
   img._ah    = oc.height;
 }
 
-// Load all cat images
-for (let i = 1; i <= CAT_COUNT; i++) {
-  const img = new Image();
-  img.onload  = () => { extractAlpha(img); markLoaded(); };
-  img.onerror = markLoaded;
-  img.src = `${CAT_PREFIX}${i}.webp`;
-  cats.push(img);
-}
+// Load cat atlas (3×3 grid) and slice into CAT_COUNT canvas frames
+const catAtlas = new Image();
+catAtlas.onload = () => {
+  const cols = CAT_ATLAS_COLS;
+  const rows = CAT_ATLAS_COLS;
+  const fw = Math.floor(catAtlas.naturalWidth  / cols);
+  const fh = Math.floor(catAtlas.naturalHeight / rows);
+  for (let i = 0; i < CAT_COUNT; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const fc  = document.createElement('canvas');
+    fc.width  = fw;
+    fc.height = fh;
+    fc.getContext('2d').drawImage(catAtlas, col * fw, row * fh, fw, fh, 0, 0, fw, fh);
+    extractAlpha(fc);
+    cats.push(fc);
+  }
+  markLoaded();
+};
+catAtlas.onerror = markLoaded;
+catAtlas.src = CAT_ATLAS_SRC;
 
 // Extract alpha for anchor (src set here so onload is guaranteed to fire after handler is assigned)
 anchorImg.onload  = () => { extractAlpha(anchorImg); markLoaded(); };

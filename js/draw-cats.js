@@ -8,7 +8,7 @@ function drawBug(b) {
 
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate(b.rot);
+  if (b.flip) ctx.scale(-1, 1);
   ctx.drawImage(b.img, -b.size / 2, -b.size / 2, b.size, b.size);
   ctx.restore();
 }
@@ -22,6 +22,7 @@ function drawBugs() {
     if (b.y > canvas.height) {
       bugs.splice(i, 1);
       if (b.type === 'anchor') continue;
+      playErrorSound();
       streak = 0;
       streakHitTimes = [];
       fallSpeedMultiplier = 1.0;
@@ -69,7 +70,7 @@ function drawBugs() {
     ctx.globalAlpha = b.life;
     ctx.translate(b.x + b.size / 2, b.y + b.size / 2);
     ctx.rotate(b.rot);
-    ctx.scale(b.life, b.life);
+    ctx.scale(b.flip ? -b.life : b.life, b.life);
     ctx.drawImage(b.img, -b.size / 2, -b.size / 2, b.size, b.size);
     ctx.restore();
   }

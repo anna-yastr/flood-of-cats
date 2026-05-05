@@ -2,41 +2,8 @@
    INPUT HANDLING
    ========================= */
 
-// Pixel-perfect hit detection via inverse rotation transform + alpha lookup.
-// Falls back to bounding box if alpha data isn't ready yet.
 function pixelHit(b, mx, my) {
-  // 1. Bounding box early exit
-  if (mx < b.x || mx > b.x + b.size || my < b.y || my > b.y + b.size) return false;
-
-  const img = b.img;
-  if (!img._alpha) return true; // alpha not ready — bounding box fallback
-
-  // 2. Back-transform (mx, my) into image local space
-  const cx  = b.x + b.size / 2;
-  const cy  = b.y + b.size / 2;
-  const dx  = mx - cx;
-  const dy  = my - cy;
-  const cos = Math.cos(-b.rot);
-  const sin = Math.sin(-b.rot);
-  const lx  = dx * cos - dy * sin + b.size / 2;
-  const ly  = dx * sin + dy * cos + b.size / 2;
-
-  // 3. Map from rendered size to natural image size
-  const px = Math.floor(lx / b.size * img._aw);
-  const py = Math.floor(ly / b.size * img._ah);
-
-  if (px < 0 || py < 0 || px >= img._aw || py >= img._ah) return false;
-
-  // 4. Alpha lookup (threshold 10 to ignore antialias fringe)
-  const hit = img._alpha[py * img._aw + px] > 10;
-
-  if (DEBUG_PIXEL_HIT) {
-    // Store last click info for the debug overlay drawn in drawBugs
-    window._dbgClick = { mx, my, bx: b.x, by: b.y, bsize: b.size, px, py,
-                         alpha: img._alpha[py * img._aw + px], hit };
-  }
-
-  return hit;
+  return mx >= b.x && mx <= b.x + b.size && my >= b.y && my <= b.y + b.size;
 }
 
 function pointerPos(evt) {
@@ -87,9 +54,10 @@ function tryHit(mx, my) {
     const hit = pixelHit(b, mx, my);
     if (hit) {
       hitEffects.push({ x: b.x + b.size / 2, y: b.y + b.size / 2, r: b.size * 0.32, life: 1.0 });
-      dyingBugs.push({ x: b.x, y: b.y, size: b.size, img: b.img, rot: b.rot, tx: mx, ty: my, life: 1.0 });
+      dyingBugs.push({ x: b.x, y: b.y, size: b.size, img: b.img, rot: b.rot, flip: b.flip, tx: mx, ty: my, life: 1.0 });
       bugs.splice(i, 1);
       if (b.type === 'anchor') {
+        playErrorSound();
         streak = 0;
         streakHitTimes = [];
         fallSpeedMultiplier = 1.0;
@@ -99,6 +67,7 @@ function tryHit(mx, my) {
         streakHitTimes.push(now);
         streak = Math.min(streak + 1, 5);
         score += streak;
+        playMeowSound();
         updateScoreDisplay();
         spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * CLICK_SPEEDUP_FACTOR));
         if (streak === 5) {
@@ -108,7 +77,7 @@ function tryHit(mx, my) {
             comboSpeedBoostPending = true;
           }
           const boost = randf(1.02, 1.15);
-          fallSpeedMultiplier += (boost - 1) * 0.10;
+          fallSpeedMultiplier += (boost - 1) * 0.05;
         }
       }
       return;
@@ -181,6 +150,7 @@ canvas.addEventListener("click", (e) => {
     }
     const r = startRect();
     if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
+      if (!readyToStart) return; // gameplay assets still loading
       waitingToStart = false;
       hoverStart = false;
       startSpawning();
@@ -226,6 +196,7 @@ canvas.addEventListener("touchstart", (e) => {
     }
     const r = startRect();
     if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
+      if (!readyToStart) return; // gameplay assets still loading
       waitingToStart = false;
       hoverStart = false;
       startSpawning();

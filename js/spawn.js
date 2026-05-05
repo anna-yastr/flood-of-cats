@@ -37,6 +37,7 @@ function startSpawning() {
 
 function spawnBug() {
   if (gameOver) return;
+  if (bugs.length >= MAX_BUGS_ON_SCREEN) return;
 
   // Random size with ±20% jitter
   const baseSize = Math.max(10, Math.floor(BASE_BUG_SIZE * IMAGE_SCALE));
@@ -57,14 +58,11 @@ function spawnBug() {
   const spawnAnchor  = lastSpawnType !== 'anchor' && Math.random() < anchorChance;
 
   if (spawnAnchor) {
-    // Anchor: no rotation, falls at cat speed
-    const vy = (2.5 + t * 2.0) * fallSpeedMultiplier;
+    // Anchor: no rotation, falls faster than cats
+    const vy = (3.45 + t * 2.40) * fallSpeedMultiplier * FALL_SPEED_BOOST * 1.15;
     bugs.push({ x, y, size, img: anchorImg, rot: 0, vy, type: 'anchor' });
     lastSpawnType = 'anchor';
   } else {
-    // Random rotation ±30°
-    const rot = degToRad(randf(-ROTATE_DEG, ROTATE_DEG));
-
     // Pick a random cat image, never repeat the same index as last spawn
     let catIndex = randi(cats.length);
     if (cats.length > 1 && catIndex === lastCatIndex) {
@@ -73,9 +71,10 @@ function spawnBug() {
     lastCatIndex  = catIndex;
     lastSpawnType = 'cat';
 
-    const comboBoost = comboSpeedBoostPending ? COMBO_SPEED_BOOST : 1;
+    const flip = Math.random() < CAT_FLIP_CHANCE;
+    const comboBoost = comboSpeedBoostPending ? Math.min(1.6, COMBO_SPEED_BOOST * fallSpeedMultiplier) : 1;
     comboSpeedBoostPending = false;
-    const vy = (2.5 + t * 2.0) * fallSpeedMultiplier * comboBoost;
-    bugs.push({ x, y, size, img: cats[catIndex], rot, vy, type: 'cat' });
+    const vy = (2.875 + t * 2.00) * fallSpeedMultiplier * comboBoost * FALL_SPEED_BOOST;
+    bugs.push({ x, y, size, img: cats[catIndex], rot: 0, flip, vy, type: 'cat' });
   }
 }
