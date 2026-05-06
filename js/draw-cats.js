@@ -22,7 +22,7 @@ function drawBugs() {
     if (b.y > canvas.height) {
       bugs.splice(i, 1);
       if (b.type === 'anchor') continue;
-      playErrorSound();
+      errorFlash = 42; // ~0.7 sec at 60 FPS
       streak = 0;
       streakHitTimes = [];
       fallSpeedMultiplier = 1.0;

@@ -57,7 +57,7 @@ function tryHit(mx, my) {
       dyingBugs.push({ x: b.x, y: b.y, size: b.size, img: b.img, rot: b.rot, flip: b.flip, tx: mx, ty: my, life: 1.0 });
       bugs.splice(i, 1);
       if (b.type === 'anchor') {
-        playErrorSound();
+        errorFlash = 42; // ~0.7 sec at 60 FPS
         streak = 0;
         streakHitTimes = [];
         fallSpeedMultiplier = 1.0;
@@ -67,7 +67,10 @@ function tryHit(mx, my) {
         streakHitTimes.push(now);
         streak = Math.min(streak + 1, 5);
         score += streak;
-        playMeowSound();
+        if (Math.floor(score / 100) > lastHundredSound) {
+          lastHundredSound = Math.floor(score / 100);
+          playMeowSound();
+        }
         updateScoreDisplay();
         spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * CLICK_SPEEDUP_FACTOR));
         if (streak === 5) {

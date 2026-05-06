@@ -38,6 +38,8 @@ function resetRunState(startImmediately = false) {
   streakHitTimes = [];
   comboSpeedBoostPending = false;
   newScoreIndex = -1;
+  lastHundredSound = 0;
+  errorFlash = 0;
 
   waterCurrentY = canvas.height;
   waterTargetY  = canvas.height;
@@ -93,6 +95,8 @@ function startCountdown() {
    ========================= */
 
 function loop() {
+  if (errorFlash > 0) errorFlash--;
+
   clearField();
 
   if (!gameOver) {

@@ -18,6 +18,8 @@ let lastSpawnType = null; // 'cat' | 'anchor' — prevents same object twice in 
 let fallSpeedMultiplier = 1.0; // accumulates on each combo-5 hit
 let streakHitTimes = []; // timestamps of hits in current streak (for fast-combo detection)
 let comboSpeedBoostPending = false; // next spawned cat gets ×COMBO_SPEED_BOOST
+let lastHundredSound = 0; // tracks the last hundred milestone for meow sound
+let errorFlash = 0; // frames left for red border flash on error
 
 // Water level animation
 let waterCurrentY = canvas.height; // current Y position (top of image)
@@ -62,7 +64,7 @@ const pawCanvas = document.getElementById('pawCanvas');
 const pawCtx    = pawCanvas.getContext('2d');
 
 // Asset loading progress
-let assetsToLoad = 13; // waterLevel + waterLevelTop + defeat + defeat1 + anchor + comboPaw + start1 + start2 + tex1 + tex2 + tut1 + tut2 + catAtlas
+let assetsToLoad = 17; // waterLevel + waterLevelTop + defeat + defeat1 + anchor + comboPaw + start1 + start2 + tex1 + tex2 + tut1 + tut2 + catAtlas + 4 meow sounds
 let assetsLoaded = 0;
 let uiReady = false;           // start+tutorial buttons loaded → show start screen
 let uiAssetsLoaded = 0;

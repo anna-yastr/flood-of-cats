@@ -10,20 +10,46 @@ function markLoaded() {
   }
 }
 
+const meowAudioAssets = [];
+// Removed errorAudioAssets - using visual flash instead
+
+function createAudioAsset(src, volume) {
+  const audio = new Audio();
+  audio.preload = 'auto';
+  audio.src = src;
+  audio.volume = Math.min(1, Math.max(0, volume));
+  audio.oncanplaythrough = markLoaded;
+  audio.onerror = markLoaded;
+  audio.load();
+  return audio;
+}
+
+function initAudioAssets() {
+  if (typeof MEOW_SOUND_SOURCES !== 'undefined' && MEOW_SOUND_SOURCES.length > 0) {
+    for (let i = 0; i < MEOW_SOUND_SOURCES.length; i++) {
+      meowAudioAssets.push(createAudioAsset(MEOW_SOUND_SOURCES[i], MEOW_VOLUME));
+    }
+  }
+  // Removed error sound loading - using visual flash instead
+}
+
 function playMeowSound() {
-  if (!soundEnabled || typeof MEOW_SOUND_SOURCES === 'undefined' || MEOW_SOUND_SOURCES.length === 0) return;
-  const index = Math.floor(Math.random() * MEOW_SOUND_SOURCES.length);
-  const audio = new Audio(MEOW_SOUND_SOURCES[index]);
-  audio.volume = Math.min(1, Math.max(0, MEOW_VOLUME));
+  if (!soundEnabled || meowAudioAssets.length === 0) return;
+  const index = Math.floor(Math.random() * meowAudioAssets.length);
+  const audio = meowAudioAssets[index];
+  if (!audio) return;
+  try {
+    if (audio.readyState >= 2) {
+      // HAVE_CURRENT_DATA or better — safe to seek
+      audio.currentTime = 0;
+    }
+  } catch (err) {
+    // some browsers may reject currentTime reset while not ready
+  }
   audio.play().catch(() => {});
 }
 
-function playErrorSound() {
-  if (!soundEnabled || typeof ERROR_SOUND_SRC === 'undefined' || !ERROR_SOUND_SRC) return;
-  const audio = new Audio(ERROR_SOUND_SRC);
-  audio.volume = Math.min(1, Math.max(0, ERROR_VOLUME));
-  audio.play().catch(() => {});
-}
+// Removed playErrorSound - using visual flash instead
 
 function updateSoundToggleButton() {
   const btn = document.getElementById('soundToggleBtn');
@@ -172,4 +198,5 @@ anchorImg.onload  = () => { extractAlpha(anchorImg); markLoaded(); };
 anchorImg.onerror = markLoaded;
 anchorImg.src     = ANCHOR_SRC;
 
+initAudioAssets();
 startLoadingDots();
