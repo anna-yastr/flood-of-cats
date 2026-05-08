@@ -10,16 +10,16 @@ const MAX_BUGS_ON_SCREEN = 3;
 const MAX_ESCAPED_CATS = 10; // 10 котов × 10% = 100% — game over
 
 // Bug visuals
-const IMAGE_SCALE = 2.1875;   // базовый скейл ботинка
+const IMAGE_SCALE = 2.1875;   // базовый скейл кота
 const BASE_BUG_SIZE = 174;    // базовый размер до скейла (134 × 1.3)
 const SIZE_JITTER = 0.20;     // ±20% (0.20 => [0.8..1.2])
 const CAT_FLIP_CHANCE = 0.5;  // вероятность зеркалить кота по горизонтали
 
 // Spawn speed (geometric progression)
 const SPAWN_INTERVAL_START_MS = 1250;
-const SPAWN_INTERVAL_MULTIPLIER = 0.986; // ближе к 1.0 = медленнее ускоряется
+const SPAWN_INTERVAL_MULTIPLIER = 0.985; // ближе к 1.0 = медленнее ускоряется
 const SPAWN_INTERVAL_MIN_MS = 420;
-const CLICK_SPEEDUP_FACTOR = 0.976;
+const CLICK_SPEEDUP_FACTOR = 0.970;
 const FALL_SPEED_BOOST = 1.125; // общий множитель скорости падения котов и якорей
 
 // Defeat image sizing
@@ -58,6 +58,12 @@ const WATER_LEVEL_STEP = 0.1;   // +10% высоты канваса за каж�
 
 // Anchor
 const ANCHOR_SRC = "assets/anchor1.webp";
+
+// Background music
+const BACKGROUND_MUSIC_SRC = "assets/Suno_Purring_Drift.mp3";
+const BACKGROUND_MUSIC_VOLUME = 0.1; // default volume 0.0..1.0
+const BACKGROUND_MUSIC_STORAGE_KEY = 'flood_bg_music_volume';
+const BACKGROUND_MUSIC_MENU_FACTOR = 0.6; // volume multiplier outside the game (menus, game over)
 
 // Cat hit sound
 const MEOW_VOLUME = 0.01; // internal volume setting 0.0..1.0

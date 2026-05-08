@@ -18,6 +18,7 @@ let lastSpawnType = null; // 'cat' | 'anchor' — prevents same object twice in 
 let fallSpeedMultiplier = 1.0; // accumulates on each combo-5 hit
 let streakHitTimes = []; // timestamps of hits in current streak (for fast-combo detection)
 let comboSpeedBoostPending = false; // next spawned cat gets ×COMBO_SPEED_BOOST
+let streak5Since = null; // timestamp when streak first reached 5 (for +1 slot bonus)
 let lastHundredSound = 0; // tracks the last hundred milestone for meow sound
 let errorFlash = 0; // frames left for red border flash on error
 
@@ -79,6 +80,17 @@ if (soundEnabled === null) {
 } else {
   soundEnabled = soundEnabled === '1';
 }
+
+// Background music volume (0.0 to 1.0)
+let backgroundMusicVolume = localStorage.getItem(BACKGROUND_MUSIC_STORAGE_KEY);
+if (backgroundMusicVolume === null) {
+  backgroundMusicVolume = BACKGROUND_MUSIC_VOLUME;
+} else {
+  backgroundMusicVolume = parseFloat(backgroundMusicVolume);
+}
+// Active volume multiplier: BACKGROUND_MUSIC_MENU_FACTOR on menus, 1.0 during gameplay
+let currentMusicFactor = BACKGROUND_MUSIC_MENU_FACTOR;
+
 let newScoreIndex = -1; // index in bestScores of the just-recorded score, -1 = none
 let defeatTimeoutId = null;   // 30-second auto-switch from defeat to start screen
 

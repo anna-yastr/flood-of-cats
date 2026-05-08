@@ -37,7 +37,8 @@ function startSpawning() {
 
 function spawnBug() {
   if (gameOver) return;
-  if (bugs.length >= MAX_BUGS_ON_SCREEN) return;
+  const extraSlot = streak >= 5 && streak5Since !== null && Date.now() - streak5Since >= 2000 ? 1 : 0;
+  if (bugs.length >= MAX_BUGS_ON_SCREEN + extraSlot) return;
 
   // Random size with ±20% jitter
   const baseSize = Math.max(10, Math.floor(BASE_BUG_SIZE * IMAGE_SCALE));

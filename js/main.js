@@ -30,6 +30,7 @@ function resetRunState(startImmediately = false) {
   dyingBugs    = [];
   score        = 0;
   streak       = 0;
+  streak5Since = null;
   gameOver     = false;
   escapedCats  = 0;
   lastCatIndex = -1;
@@ -48,6 +49,8 @@ function resetRunState(startImmediately = false) {
   spawnInterval = SPAWN_INTERVAL_START_MS;
   stopSpawning();
   updateScoreDisplay();
+
+  setMusicVolume(BACKGROUND_MUSIC_MENU_FACTOR);
 
   countdown      = 3;
   countdownActive = false;

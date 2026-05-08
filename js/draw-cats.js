@@ -24,8 +24,9 @@ function drawBugs() {
       if (b.type === 'anchor') continue;
       errorFlash = 42; // ~0.7 sec at 60 FPS
       streak = 0;
+      streak5Since = null;
       streakHitTimes = [];
-      fallSpeedMultiplier = 1.0;
+      fallSpeedMultiplier = Math.max(1.0, fallSpeedMultiplier * 0.95);
       updateScoreDisplay();
       escapedCats++;
       const waterFill = escapedCats * WATER_LEVEL_STEP;
@@ -33,6 +34,7 @@ function drawBugs() {
         gameOver = true;
         recordScore();
         stopSpawning();
+        setMusicVolume(BACKGROUND_MUSIC_MENU_FACTOR);
         if (countdownTimerId) clearInterval(countdownTimerId);
         defeatTimeoutId = setTimeout(() => {
           defeatTimeoutId = null;

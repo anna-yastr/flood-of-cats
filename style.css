@@ -192,43 +192,55 @@ body{
 
 
 /* =========================
-   RESET SCORE BUTTON
+   SOUND / RESET BUTTONS
    ========================= */
 
-#soundToggleBtn,
-#resetScoreBtn {
+#soundToggleBtn {
   position: fixed;
+  top: 14px;
+  right: 14px;
   font-family: 'Fredoka One', cursive;
   font-size: 11px;
   color: #254160;
-  background: rgba(255,255,255,0.75);
+  text-shadow: 1px 1px 2px rgba(10,25,60,0.35);
+  background: rgba(255,255,255,0.30);
+  backdrop-filter: blur(4px);
   border: none;
-  border-radius: 10px;
-  padding: 7px 10px;
+  border-radius: 12px;
+  padding: 5px 12px;
   cursor: pointer;
   opacity: 0.88;
   z-index: 100;
-  transition: opacity 0.15s, background 0.15s, transform 0.15s;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  transition: opacity 0.15s, background 0.15s;
 }
 
-#soundToggleBtn {
-  top: 14px;
-  right: 14px;
-}
-
-#soundToggleBtn:hover,
-#resetScoreBtn:hover {
+#soundToggleBtn:hover {
   opacity: 1;
-  background: rgba(255,255,255,0.95);
-  transform: translateY(-1px);
+  background: rgba(255,255,255,0.50);
 }
 
 #resetScoreBtn {
+  position: fixed;
   bottom: 12px;
   right: 14px;
+  font-family: 'Fredoka One', cursive;
   font-size: 10px;
+  color: #254160;
+  text-shadow: 1px 1px 2px rgba(10,25,60,0.35);
+  background: rgba(255,255,255,0.30);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 12px;
   padding: 4px 9px;
+  cursor: pointer;
+  opacity: 0.88;
+  z-index: 100;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+#resetScoreBtn:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.50);
 }
 
 /* =========================

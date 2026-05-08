@@ -61,12 +61,109 @@ function toggleSound() {
   soundEnabled = !soundEnabled;
   localStorage.setItem(SOUND_ENABLED_STORAGE_KEY, soundEnabled ? '1' : '0');
   updateSoundToggleButton();
+  
+  // Update background music playback
+  const bgMusic = document.getElementById('backgroundMusic');
+  if (bgMusic) {
+    if (soundEnabled) {
+      bgMusic.volume = Math.min(1, backgroundMusicVolume * currentMusicFactor);
+      bgMusic.play().catch(() => {});
+    } else {
+      bgMusic.pause();
+    }
+  }
 }
 
 const soundToggleBtn = document.getElementById('soundToggleBtn');
 if (soundToggleBtn) {
   soundToggleBtn.addEventListener('click', toggleSound);
   updateSoundToggleButton();
+}
+
+let musicFadeTimer = null;
+
+// Fades bgMusic from 0 to targetVolume over durationMs milliseconds
+function fadeInMusic(targetVolume, durationMs) {
+  if (musicFadeTimer) { clearInterval(musicFadeTimer); musicFadeTimer = null; }
+  const bgMusic = document.getElementById('backgroundMusic');
+  if (!bgMusic) return;
+  bgMusic.volume = 0;
+  const totalSteps = Math.round(durationMs / 50);
+  const stepSize = targetVolume / totalSteps;
+  let step = 0;
+  musicFadeTimer = setInterval(() => {
+    step++;
+    bgMusic.volume = Math.min(targetVolume, stepSize * step);
+    if (step >= totalSteps) { clearInterval(musicFadeTimer); musicFadeTimer = null; }
+  }, 50);
+}
+
+// Sets bgMusic volume applying the given factor (1.0 in-game, BACKGROUND_MUSIC_MENU_FACTOR on menus)
+function setMusicVolume(factor) {
+  if (musicFadeTimer) { clearInterval(musicFadeTimer); musicFadeTimer = null; }
+  currentMusicFactor = factor;
+  const bgMusic = document.getElementById('backgroundMusic');
+  if (bgMusic) bgMusic.volume = Math.min(1, backgroundMusicVolume * factor);
+}
+
+// Background music management
+function initBackgroundMusic() {
+  const bgMusic = document.getElementById('backgroundMusic');
+  if (!bgMusic) return;
+
+  bgMusic.src = BACKGROUND_MUSIC_SRC;
+  bgMusic.volume = Math.min(1, backgroundMusicVolume * currentMusicFactor);
+
+  // Set up volume slider
+  const volumeSlider = document.getElementById('volumeSlider');
+  if (volumeSlider) {
+    volumeSlider.value = Math.round(backgroundMusicVolume * 100);
+
+    volumeSlider.addEventListener('input', (e) => {
+      backgroundMusicVolume = e.target.value / 100;
+      bgMusic.volume = Math.min(1, backgroundMusicVolume * currentMusicFactor);
+      localStorage.setItem(BACKGROUND_MUSIC_STORAGE_KEY, backgroundMusicVolume);
+    });
+  }
+
+  bgMusic.onerror = markLoaded;
+  bgMusic.load();
+
+  function startWithFade() {
+    if (!soundEnabled || !bgMusic.paused) return;
+    bgMusic.play().catch(() => {});
+    fadeInMusic(Math.min(1, backgroundMusicVolume * currentMusicFactor), 3500);
+  }
+
+  // Pause music when screen locks / tab hides; resume when visible again
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      bgMusic._wasPlayingBeforeHide = !bgMusic.paused;
+      bgMusic.pause();
+    } else if (bgMusic._wasPlayingBeforeHide && soundEnabled) {
+      bgMusic.play().catch(() => {});
+    }
+  });
+
+  // Register immediately — catches the very first tap even before audio finishes loading
+  document.addEventListener('click',      startWithFade, { once: true });
+  document.addEventListener('touchstart', startWithFade, { once: true, passive: true });
+
+  // Also try autoplay when audio is ready (works on desktop / permissive Android)
+  bgMusic.addEventListener('canplaythrough', () => {
+    markLoaded();
+    if (!soundEnabled || !bgMusic.paused) return; // already started via tap
+    bgMusic.play()
+      .then(() => fadeInMusic(Math.min(1, backgroundMusicVolume * currentMusicFactor), 3500))
+      .catch(() => {}); // blocked — tap listeners above will handle it
+  }, { once: true });
+}
+
+// Call initialization when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initBackgroundMusic);
+} else {
+  initBackgroundMusic();
 }
 
 function markUiLoaded() {
@@ -92,8 +189,19 @@ function stopLoadingDots() {
   }
 }
 
-// Load water images
-waterLevelImg.onload  = markLoaded;
+// Load water images (after these load, start background music)
+function onWaterImagesLoadedStart() {
+  // Trigger background music loading after water background is ready
+  const bgMusic = document.getElementById('backgroundMusic');
+  if (bgMusic && !bgMusic.src) {
+    initBackgroundMusic();
+  }
+}
+
+waterLevelImg.onload  = () => {
+  markLoaded();
+  onWaterImagesLoadedStart();
+};
 waterLevelImg.onerror = markLoaded;
 waterLevelImg.src = WATER_LEVEL_SRC;
 

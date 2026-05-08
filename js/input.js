@@ -3,7 +3,16 @@
    ========================= */
 
 function pixelHit(b, mx, my) {
-  return mx >= b.x && mx <= b.x + b.size && my >= b.y && my <= b.y + b.size;
+  if (b.type === 'anchor') {
+    const insetX = b.size * 0.12;
+    const insetY = b.size * 0.03;
+    return mx >= b.x + insetX && mx <= b.x + b.size - insetX &&
+           my >= b.y + insetY && my <= b.y + b.size - insetY;
+  }
+  // cats: trim 3% from each side
+  const inset = b.size * 0.03;
+  return mx >= b.x + inset && mx <= b.x + b.size - inset &&
+         my >= b.y + inset && my <= b.y + b.size - inset;
 }
 
 function pointerPos(evt) {
@@ -59,13 +68,16 @@ function tryHit(mx, my) {
       if (b.type === 'anchor') {
         errorFlash = 42; // ~0.7 sec at 60 FPS
         streak = 0;
+        streak5Since = null;
         streakHitTimes = [];
-        fallSpeedMultiplier = 1.0;
+        fallSpeedMultiplier = Math.max(1.0, fallSpeedMultiplier * 0.95);
         updateScoreDisplay();
       } else {
         const now = Date.now();
         streakHitTimes.push(now);
+        const prevStreak = streak;
         streak = Math.min(streak + 1, 5);
+        if (streak === 5 && prevStreak < 5) streak5Since = now;
         score += streak;
         if (Math.floor(score / 100) > lastHundredSound) {
           lastHundredSound = Math.floor(score / 100);
@@ -157,6 +169,11 @@ canvas.addEventListener("click", (e) => {
       waitingToStart = false;
       hoverStart = false;
       startSpawning();
+      setMusicVolume(1.0);
+      const bgMusic = document.getElementById('backgroundMusic');
+      if (bgMusic && soundEnabled && bgMusic.paused) {
+        bgMusic.play().catch(() => {});
+      }
       return;
     }
     {
@@ -203,6 +220,11 @@ canvas.addEventListener("touchstart", (e) => {
       waitingToStart = false;
       hoverStart = false;
       startSpawning();
+      setMusicVolume(1.0);
+      const bgMusic = document.getElementById('backgroundMusic');
+      if (bgMusic && soundEnabled && bgMusic.paused) {
+        bgMusic.play().catch(() => {});
+      }
       return;
     }
     {
