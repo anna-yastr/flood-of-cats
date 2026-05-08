@@ -26,7 +26,7 @@ function drawBugs() {
       streak = 0;
       streak5Since = null;
       streakHitTimes = [];
-      fallSpeedMultiplier = Math.max(1.0, fallSpeedMultiplier * 0.95);
+      fallSpeedMultiplier = Math.max(FALL_SPEED_MULTIPLIER_START, fallSpeedMultiplier * 0.95);
       updateScoreDisplay();
       escapedCats++;
       const waterFill = escapedCats * WATER_LEVEL_STEP;

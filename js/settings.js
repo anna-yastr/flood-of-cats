@@ -15,12 +15,14 @@ const BASE_BUG_SIZE = 174;    // базовый размер до скейла (
 const SIZE_JITTER = 0.20;     // ±20% (0.20 => [0.8..1.2])
 const CAT_FLIP_CHANCE = 0.5;  // вероятность зеркалить кота по горизонтали
 
-// Spawn speed (geometric progression)
-const SPAWN_INTERVAL_START_MS = 1250;
-const SPAWN_INTERVAL_MULTIPLIER = 0.985; // ближе к 1.0 = медленнее ускоряется
-const SPAWN_INTERVAL_MIN_MS = 420;
-const CLICK_SPEEDUP_FACTOR = 0.970;
-const FALL_SPEED_BOOST = 1.125; // общий множитель скорости падения котов и якорей
+// Сложность — ускорение ТОЛЬКО от кликов, авто-ускорение отключено
+const SPAWN_INTERVAL_START_MS     = 1250;
+const SPAWN_INTERVAL_MIN_MS       = 420;
+const FALL_SPEED_BOOST            = 1.125; // общий множитель скорости падения котов и якорей
+const FALL_SPEED_MULTIPLIER_START = 0.45;   // начальная скорость (40% от базовой)
+const FALL_SPEED_MULTIPLIER_MAX   = 3.0;   // предел скорости
+const COMBO_BOOST_MIN             = 1.02;  // прирост скорости за комбо-стрик: мин 2%
+const COMBO_BOOST_MAX             = 1.07;  // прирост скорости за комбо-стрик: макс 7%
 
 // Defeat image sizing
 const DEFEAT_IMG_W = 449;
@@ -92,7 +94,6 @@ const COMBO_PAW_BORDER  = 30;   // px — strip width outside canvasFrame on eac
 const ANCHOR_SPAWN_CHANCE_MIN = 0.16; // min chance per spawn to be an anchor
 const ANCHOR_SPAWN_CHANCE_MAX = 0.28; // max chance per spawn to be an anchor
 const COMBO_WINDOW_MS   = 6000; // max ms for 5 hits to count as a fast combo
-const COMBO_SPEED_BOOST = 1.25;  // base vy multiplier applied to one cat after fast combo-5
 
 // Vortex drain effect (activates on game over)
 const VORTEX_TANGENTIAL = 0.30;  // ускорение по касательной (закручивание)

@@ -36,6 +36,7 @@ body{
   max-width: 980px;
   padding: 6px;
   box-sizing: border-box;
+  --game-size: min(calc(100vw - 40px), calc((100svh - 60px) / 1.14), 720px);
 }
 
 .top{
@@ -52,7 +53,7 @@ body{
 
 .titleImg{
   display: block;
-  width: min(52vw, 400px);
+  width: calc(var(--game-size) * 0.55);
   height: auto;
   aspect-ratio: 1024 / 256;
   margin: -10px 0 12px;
@@ -63,7 +64,7 @@ body{
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  width: min(calc(100vw - 40px), 720px);
+  width: var(--game-size);
   margin: -8px 0 4px;
   padding: 5px 12px 5px 10px;
   box-sizing: border-box;
@@ -151,7 +152,7 @@ body{
 /* frame scales with viewport, capped at native canvas width */
 .canvasFrame{
   position: relative;
-  width: min(calc(100vw - 40px), 720px);
+  width: var(--game-size);
   aspect-ratio: 1 / 1;
 
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
@@ -265,6 +266,44 @@ body{
   /* iOS Safari: fixed background ломает compositing дочерних элементов */
   body{
     background-attachment: scroll;
+  }
+
+}
+
+/* =========================
+   LANDSCAPE
+   ========================= */
+
+@media (orientation: landscape) {
+
+  body {
+    padding-top: 1svh;
+    background-attachment: scroll;
+  }
+
+  .titleImg {
+    margin: 0 0 4px;
+  }
+
+  .scoreBar {
+    margin: 0 0 2px;
+  }
+
+  .gameArea {
+    padding: 4px 0;
+  }
+
+  /* счёт: font-size и иконка по высоте, не ширине */
+  .scoreIcon  { width: clamp(18px, 4svh, 26px); }
+  .scoreLabel,
+  .scoreText  { font-size: clamp(14px, 4svh, 22px); }
+
+  /* граница: процент от размера canvas, пропорционально при любом размере */
+  .borderImg {
+    top:    -2%;
+    left:   -2%;
+    width:  104%;
+    height: 104%;
   }
 
 }

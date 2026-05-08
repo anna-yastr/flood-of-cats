@@ -21,7 +21,6 @@ function scheduleNextSpawn() {
   if (gameOver) return;
   spawnTimerId = setTimeout(() => {
     spawnBug();
-    spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * SPAWN_INTERVAL_MULTIPLIER));
     scheduleNextSpawn();
   }, spawnInterval);
 }
@@ -73,9 +72,7 @@ function spawnBug() {
     lastSpawnType = 'cat';
 
     const flip = Math.random() < CAT_FLIP_CHANCE;
-    const comboBoost = comboSpeedBoostPending ? Math.min(1.6, COMBO_SPEED_BOOST * fallSpeedMultiplier) : 1;
-    comboSpeedBoostPending = false;
-    const vy = (2.875 + t * 2.00) * fallSpeedMultiplier * comboBoost * FALL_SPEED_BOOST;
+    const vy = (2.875 + t * 2.00) * fallSpeedMultiplier * FALL_SPEED_BOOST;
     bugs.push({ x, y, size, img: cats[catIndex], rot: 0, flip, vy, type: 'cat' });
   }
 }

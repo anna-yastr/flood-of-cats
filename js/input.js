@@ -70,7 +70,7 @@ function tryHit(mx, my) {
         streak = 0;
         streak5Since = null;
         streakHitTimes = [];
-        fallSpeedMultiplier = Math.max(1.0, fallSpeedMultiplier * 0.95);
+        fallSpeedMultiplier = Math.max(FALL_SPEED_MULTIPLIER_START, fallSpeedMultiplier * 0.95);
         updateScoreDisplay();
       } else {
         const now = Date.now();
@@ -84,15 +84,10 @@ function tryHit(mx, my) {
           playMeowSound();
         }
         updateScoreDisplay();
-        spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * CLICK_SPEEDUP_FACTOR));
-        if (streak === 5) {
-          // Fast combo: 5 hits within COMBO_WINDOW_MS → next spawned cat gets ×COMBO_SPEED_BOOST
-          if (streakHitTimes.length >= 5 &&
-              now - streakHitTimes[streakHitTimes.length - 5] <= COMBO_WINDOW_MS) {
-            comboSpeedBoostPending = true;
-          }
-          const boost = randf(1.02, 1.15);
-          fallSpeedMultiplier += (boost - 1) * 0.05;
+        if (streak === 5 && streakHitTimes.length % 5 === 0) {
+          const comboBoost = randf(COMBO_BOOST_MIN, COMBO_BOOST_MAX);
+          spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * (2 - comboBoost)));
+          fallSpeedMultiplier = Math.min(FALL_SPEED_MULTIPLIER_MAX, fallSpeedMultiplier * comboBoost);
         }
       }
       return;
