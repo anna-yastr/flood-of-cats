@@ -2,6 +2,10 @@
    INPUT HANDLING
    ========================= */
 
+function inRect(p, r) {
+  return p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+}
+
 function pixelHit(b, mx, my) {
   if (b.type === 'anchor') {
     const insetX = b.size * 0.12;
@@ -118,15 +122,16 @@ canvas.addEventListener("mousemove", (e) => {
   const p = pointerPos(e);
   if (gameOver) {
     hoverStart = false;
-    const r = defeatRect();
-    hoverDefeat = p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
-    canvas.style.cursor = hoverDefeat ? "pointer" : "";
+    const rb = modeBtnRects().relax;
+    hoverModeRelax = inRect(p, rb);
+    hoverDefeat = !hoverModeRelax && inRect(p, defeatRect());
+    canvas.style.cursor = (hoverDefeat || hoverModeRelax) ? "pointer" : "";
     return;
   }
   hoverDefeat = false;
   if (waitingToStart) {
     if (showTutorial) {
-      hoverStart = hoverTutorial = false;
+      hoverStart = hoverTutorial = hoverModeRelax = false;
       if (!tutClosing) {
         const bcx = canvas.width - BACK_BTN_MARGIN - BACK_BTN_RADIUS;
         const bcy = BACK_BTN_MARGIN + BACK_BTN_RADIUS;
@@ -146,10 +151,12 @@ canvas.addEventListener("mousemove", (e) => {
       const tr = tutorialRect();
       hoverTutorial = p.x >= tr.x && p.x <= tr.x + tr.w && p.y >= tr.y && p.y <= tr.y + tr.h;
     }
-    canvas.style.cursor = (hoverStart || hoverTutorial) ? "pointer" : "";
+    const rb = modeBtnRects().relax;
+    hoverModeRelax = inRect(p, rb);
+    canvas.style.cursor = (hoverStart || hoverTutorial || hoverModeRelax) ? "pointer" : "";
     return;
   }
-  hoverStart = hoverTutorial = false;
+  hoverStart = hoverTutorial = hoverModeRelax = false;
   canvas.style.cursor = "";
 });
 
@@ -157,10 +164,12 @@ canvas.addEventListener("mousemove", (e) => {
 canvas.addEventListener("click", (e) => {
   const p = pointerPos(e);
   if (gameOver) {
-    const r = defeatRect();
-    if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
-      resetRunState(true);
+    if (inRect(p, modeBtnRects().relax)) {
+      applyGameMode(gameMode === 'relax' ? 'stressful' : 'relax');
+      hoverModeRelax = false;
+      return;
     }
+    if (inRect(p, defeatRect())) resetRunState(true);
     return;
   }
   if (waitingToStart) {
@@ -176,27 +185,28 @@ canvas.addEventListener("click", (e) => {
       }
       return;
     }
+    if (inRect(p, modeBtnRects().relax)) {
+      applyGameMode(gameMode === 'relax' ? 'stressful' : 'relax');
+      hoverModeRelax = false;
+      return;
+    }
     const r = startRect();
-    if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
-      if (!readyToStart) return; // gameplay assets still loading
+    if (inRect(p, r)) {
+      if (!readyToStart) return;
       waitingToStart = false;
       hoverStart = false;
       startSpawning();
       setMusicVolume(1.0);
       const bgMusic = document.getElementById('backgroundMusic');
-      if (bgMusic && soundEnabled && bgMusic.paused) {
-        bgMusic.play().catch(() => {});
-      }
+      if (bgMusic && soundEnabled && bgMusic.paused) bgMusic.play().catch(() => {});
       return;
     }
-    {
-      const tr = tutorialRect();
-      if (p.x >= tr.x && p.x <= tr.x + tr.w && p.y >= tr.y && p.y <= tr.y + tr.h) {
-        tutCatIndex = Math.floor(Math.random() * cats.length);
-        showTutorial = true;
-        hoverTutorial = false;
-        return;
-      }
+    const tr = tutorialRect();
+    if (inRect(p, tr)) {
+      tutCatIndex = Math.floor(Math.random() * cats.length);
+      showTutorial = true;
+      hoverTutorial = false;
+      return;
     }
     return;
   }
@@ -208,10 +218,11 @@ canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
   const p = pointerPos(e);
   if (gameOver) {
-    const r = defeatRect();
-    if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
-      resetRunState(true);
+    if (inRect(p, modeBtnRects().relax)) {
+      applyGameMode(gameMode === 'relax' ? 'stressful' : 'relax');
+      return;
     }
+    if (inRect(p, defeatRect())) resetRunState(true);
     return;
   }
   if (waitingToStart) {
@@ -227,27 +238,27 @@ canvas.addEventListener("touchstart", (e) => {
       }
       return;
     }
+    if (inRect(p, modeBtnRects().relax)) {
+      applyGameMode(gameMode === 'relax' ? 'stressful' : 'relax');
+      return;
+    }
     const r = startRect();
-    if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) {
-      if (!readyToStart) return; // gameplay assets still loading
+    if (inRect(p, r)) {
+      if (!readyToStart) return;
       waitingToStart = false;
       hoverStart = false;
       startSpawning();
       setMusicVolume(1.0);
       const bgMusic = document.getElementById('backgroundMusic');
-      if (bgMusic && soundEnabled && bgMusic.paused) {
-        bgMusic.play().catch(() => {});
-      }
+      if (bgMusic && soundEnabled && bgMusic.paused) bgMusic.play().catch(() => {});
       return;
     }
-    {
-      const tr = tutorialRect();
-      if (p.x >= tr.x && p.x <= tr.x + tr.w && p.y >= tr.y && p.y <= tr.y + tr.h) {
-        tutCatIndex = Math.floor(Math.random() * cats.length);
-        showTutorial = true;
-        hoverTutorial = false;
-        return;
-      }
+    const tr = tutorialRect();
+    if (inRect(p, tr)) {
+      tutCatIndex = Math.floor(Math.random() * cats.length);
+      showTutorial = true;
+      hoverTutorial = false;
+      return;
     }
     return;
   }

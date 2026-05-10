@@ -3,6 +3,73 @@
    ========================= */
 
 const STREAK_COLORS  = ['#254160', '#4ab3e8', '#2ec4b6', '#f4d03f', '#ff7800'];
+
+function modeBtnRects() {
+  const w = MODE_BTN_W, h = MODE_BTN_H;
+  const br = gameOver ? defeatRect() : startRect();
+  // Top-right corner of the visual oval inside the button image
+  const x = br.x + br.w * MODE_BTN_X - w / 2;
+  const y = br.y + br.h * MODE_BTN_Y - h / 2;
+  return { relax: { x, y, w, h } };
+}
+
+function drawModeSelector() {
+  const r     = modeBtnRects().relax;
+  const isOn  = gameMode === 'relax';
+
+  // Background
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(r.x, r.y, r.w, r.h, r.h / 2);
+  ctx.fillStyle = hoverModeRelax ? '#9fbde8' : '#8BAEE0';
+  ctx.fill();
+
+  // Orange border when ON
+  if (isOn) {
+    ctx.beginPath();
+    ctx.roundRect(r.x, r.y, r.w, r.h, r.h / 2);
+    ctx.strokeStyle = '#F48525';
+    ctx.lineWidth   = 2.5;
+    ctx.stroke();
+  }
+
+  // Texture overlay
+  const curTex = (texFrame && tex2.complete && tex2.naturalWidth > 0) ? tex2 : tex1;
+  if (curTex.complete && curTex.naturalWidth > 0) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(r.x, r.y, r.w, r.h, r.h / 2);
+    ctx.clip();
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.drawImage(curTex, r.x, r.y, r.w, r.h);
+    ctx.restore();
+  }
+
+  // Text
+  ctx.font          = `${MODE_BTN_FONT}px 'Fredoka One', cursive`;
+  ctx.textAlign     = 'left';
+  ctx.textBaseline  = 'middle';
+  ctx.shadowColor   = 'rgba(10,25,60,0.35)';
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+  ctx.shadowBlur    = 2;
+  const cy          = r.y + r.h / 2;
+  const label       = 'Relax: ';
+  const state       = isOn ? 'ON' : 'OFF';
+  const labelW      = ctx.measureText(label).width;
+  const totalW      = labelW + ctx.measureText(state).width;
+  const textX       = r.x + (r.w - totalW) / 2;
+  ctx.fillStyle = '#254160';
+  ctx.fillText(label + state, textX, cy);
+
+  ctx.restore();
+  ctx.shadowColor   = 'transparent';
+  ctx.shadowBlur    = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.textBaseline  = 'alphabetic';
+  ctx.textAlign     = 'left';
+}
 const STREAK_CIRCLE  = [22, 26, 30, 34, 40];  // px — diameter of white circle
 const STREAK_FONT_PX = [11, 13, 14, 18, 21];  // px — font size inside circle
 
@@ -236,6 +303,8 @@ function drawCenterOverlay() {
       ctx.drawImage(tutImg, tdx, tdy, tdw, tdh);
     }
   }
+
+  drawModeSelector();
 
   if (!readyToStart) {
     ctx.textAlign = "center";
@@ -484,6 +553,7 @@ function drawGameOver() {
     ctx.drawImage(defeatImg, dx, dy, dw, dh);
   }
 
+  drawModeSelector();
   drawScoreboard();
   ctx.textAlign = "left";
 }

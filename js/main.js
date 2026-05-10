@@ -2,6 +2,25 @@
    RESET / RESTART
    ========================= */
 
+function applyGameMode(mode) {
+  gameMode = mode;
+  localStorage.setItem(GAME_MODE_STORAGE_KEY, mode);
+  const cfg = mode === 'stressful' ? GAME_MODE_DEFAULTS : GAME_MODE_CONFIGS[mode];
+  SPAWN_INTERVAL_START_MS  = cfg.SPAWN_INTERVAL_START_MS;
+  STREAK5_BONUS_HITS1      = cfg.STREAK5_BONUS_HITS1;
+  STREAK5_BONUS_HITS2      = cfg.STREAK5_BONUS_HITS2;
+  STREAK5_BONUS_HITS3      = cfg.STREAK5_BONUS_HITS3;
+  STREAK5_INTERVAL_FACTOR1 = cfg.STREAK5_INTERVAL_FACTOR1;
+  STREAK5_INTERVAL_FACTOR2 = cfg.STREAK5_INTERVAL_FACTOR2;
+  STREAK5_INTERVAL_FACTOR3 = cfg.STREAK5_INTERVAL_FACTOR3;
+  STREAK_BOOST_EVERY_N     = cfg.STREAK_BOOST_EVERY_N;
+  STREAK_SPEED_BOOST_M     = cfg.STREAK_SPEED_BOOST_M;
+  COMBO_BOOST_MIN          = cfg.COMBO_BOOST_MIN;
+  COMBO_BOOST_MAX          = cfg.COMBO_BOOST_MAX;
+}
+
+applyGameMode(gameMode);
+
 document.getElementById('resetScoreBtn').addEventListener('click', () => {
   bestScores    = [];
   newScoreIndex = -1;

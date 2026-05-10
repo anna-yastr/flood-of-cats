@@ -17,25 +17,57 @@ const SIZE_JITTER = 0.10;     // разброс размера котов в п�
 const CAT_FLIP_CHANCE = 0.5;  // вероятность зеркалить кота по горизонтали
 
 // Сложность — ускорение ТОЛЬКО от кликов, авто-ускорение отключено
-const SPAWN_INTERVAL_START_MS     = 1550;
+let SPAWN_INTERVAL_START_MS     = 1350;
 const SPAWN_INTERVAL_MIN_MS       = 350;
-const FALL_SPEED_BOOST            = 0.5; // базовая скорость
+const FALL_SPEED_BOOST            = 0.6; // базовая скорость
 const FALL_SPEED_MULTIPLIER_MAX   = 8.67;  // предел скорости (в множителях от базовой)
 const CAT_BASE_SPEED              = 2.875; // базовая скорость падения кота
 const CAT_SPEED_VARIANCE          = 2.00;  // добавка скорости для крупного кота
 const ANCHOR_BASE_SPEED           = 3.05;  // базовая скорость падения якоря
 const ANCHOR_SPEED_VARIANCE       = 2.40;  // добавка скорости для крупного якоря
 const ANCHOR_SPEED_BOOST          = 1.15;  // якорь падает быстрее кота в × раз
-const STREAK5_BONUS_HITS1         = 7;     // кликов в комбо 5+ до 1-го ускорения спауна
-const STREAK5_BONUS_HITS2         = 14;     // кликов в комбо 5+ до 2-го ускорения спауна
-const STREAK5_BONUS_HITS3         = 21;     // кликов в комбо 5+ до 3-го ускорения спауна
-const STREAK5_INTERVAL_FACTOR1    = 0.65;   // интервал × 0.65 (на 35% чаще)
-const STREAK5_INTERVAL_FACTOR2    = 0.50;   // интервал × 0.50 (на 50% чаще)
-const STREAK5_INTERVAL_FACTOR3    = 0.35;   // интервал × 0.35 (на 65% чаще)
-const STREAK_BOOST_EVERY_N        = 5;     // каждые N хитов подряд (стрик ≥ 2) — ускорение спавна и скорости
-const STREAK_SPEED_BOOST_M        = 1.07;  // фиксированное ускорение +7% за N подряд
-const COMBO_BOOST_MIN             = 1.01;  // рандомное ускорение при стрике 5: мин
-const COMBO_BOOST_MAX             = 1.03;  // рандомное ускорение при стрике 5: макс
+let STREAK5_BONUS_HITS1           = 7;     // кликов в комбо 5+ до 1-го ускорения спауна
+let STREAK5_BONUS_HITS2           = 14;    // кликов в комбо 5+ до 2-го ускорения спауна
+let STREAK5_BONUS_HITS3           = 21;    // кликов в комбо 5+ до 3-го ускорения спауна
+let STREAK5_INTERVAL_FACTOR1      = 0.65;  // интервал × 0.65 (на 35% чаще)
+let STREAK5_INTERVAL_FACTOR2      = 0.50;  // интервал × 0.50 (на 50% чаще)
+let STREAK5_INTERVAL_FACTOR3      = 0.35;  // интервал × 0.35 (на 65% чаще)
+let STREAK_BOOST_EVERY_N          = 5;     // каждые N хитов подряд (стрик ≥ 2) — ускорение спавна и скорости
+let STREAK_SPEED_BOOST_M          = 1.04;  // фиксированное ускорение +7% за N подряд
+let COMBO_BOOST_MIN               = 1.01;  // рандомное ускорение при стрике 5: мин
+let COMBO_BOOST_MAX               = 1.04;  // рандомное ускорение при стрике 5: макс
+
+// Snapshot of default (stressful) values — used to restore when switching back
+const GAME_MODE_DEFAULTS = {
+  SPAWN_INTERVAL_START_MS:  SPAWN_INTERVAL_START_MS,
+  STREAK5_BONUS_HITS1:      STREAK5_BONUS_HITS1,
+  STREAK5_BONUS_HITS2:      STREAK5_BONUS_HITS2,
+  STREAK5_BONUS_HITS3:      STREAK5_BONUS_HITS3,
+  STREAK5_INTERVAL_FACTOR1: STREAK5_INTERVAL_FACTOR1,
+  STREAK5_INTERVAL_FACTOR2: STREAK5_INTERVAL_FACTOR2,
+  STREAK5_INTERVAL_FACTOR3: STREAK5_INTERVAL_FACTOR3,
+  STREAK_BOOST_EVERY_N:     STREAK_BOOST_EVERY_N,
+  STREAK_SPEED_BOOST_M:     STREAK_SPEED_BOOST_M,
+  COMBO_BOOST_MIN:          COMBO_BOOST_MIN,
+  COMBO_BOOST_MAX:          COMBO_BOOST_MAX,
+};
+
+// Relax mode overrides
+const GAME_MODE_CONFIGS = {
+  relax: {
+    SPAWN_INTERVAL_START_MS:  2200,
+    STREAK5_BONUS_HITS1:      12,
+    STREAK5_BONUS_HITS2:      24,
+    STREAK5_BONUS_HITS3:      36,
+    STREAK5_INTERVAL_FACTOR1: 0.80,
+    STREAK5_INTERVAL_FACTOR2: 0.65,
+    STREAK5_INTERVAL_FACTOR3: 0.50,
+    STREAK_BOOST_EVERY_N:     9,
+    STREAK_SPEED_BOOST_M:     1.01,
+    COMBO_BOOST_MIN:          1.002,
+    COMBO_BOOST_MAX:          1.009,
+  },
+};
 
 // Error flash & dying cat effects
 const ERROR_FLASH_FRAMES   = 42;   // длительность красной рамки ошибки (~0.7 сек при 60 FPS)
@@ -59,6 +91,11 @@ const START_SRC2 = "assets/start2.webp";
 // Tutorial button sizing (80% of start button)
 const TUTORIAL_IMG_W = Math.round(START_IMG_W * 0.8);
 const TUTORIAL_IMG_H = Math.round(START_IMG_H * 0.8);
+const MODE_BTN_W        = 150;  // mode badge width in px
+const MODE_BTN_H        =  50;  // mode badge height in px
+const MODE_BTN_FONT     =  22;  // mode badge font size in px
+const MODE_BTN_X        = 0.98; // mode badge horizontal position (fraction of button width from left)
+const MODE_BTN_Y        = 0.25; // mode badge vertical position (fraction of button height from top)
 const TUTORIAL_GAP_Y    = -100; // px offset from bottom of start button (negative = higher)
 const TUTORIAL_SB_GAP_Y =   0; // px gap between scoreboard bottom and tutorial button
 

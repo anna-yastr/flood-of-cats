@@ -93,6 +93,11 @@ if (backgroundMusicVolume === null) {
 let currentMusicFactor = BACKGROUND_MUSIC_MENU_FACTOR;
 
 let newScoreIndex = -1; // index in bestScores of the just-recorded score, -1 = none
+
+// Game mode
+const GAME_MODE_STORAGE_KEY = 'flood_game_mode';
+let gameMode       = localStorage.getItem(GAME_MODE_STORAGE_KEY) || 'stressful';
+let hoverModeRelax = false;
 let defeatTimeoutId = null;   // 30-second auto-switch from defeat to start screen
 
 // Countdown before game starts (kept for compatibility)
