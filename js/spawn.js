@@ -19,13 +19,24 @@ function stopSpawning() {
 
 function scheduleNextSpawn() {
   if (gameOver) return;
+  const factor = streak5Hits >= STREAK5_BONUS_HITS3 ? STREAK5_INTERVAL_FACTOR3
+               : streak5Hits >= STREAK5_BONUS_HITS2 ? STREAK5_INTERVAL_FACTOR2
+               : streak5Hits >= STREAK5_BONUS_HITS1 ? STREAK5_INTERVAL_FACTOR1
+               : 1;
   spawnTimerId = setTimeout(() => {
     spawnBug();
     scheduleNextSpawn();
-  }, spawnInterval);
+  }, Math.max(SPAWN_INTERVAL_MIN_MS, Math.round(spawnInterval * factor)));
 }
 
 function startSpawning() {
+  const indices = cats.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = randi(i + 1);
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  introCatQueue = indices.slice(0, 5);
+
   stopSpawning();
   scheduleNextSpawn();
 }
@@ -36,14 +47,12 @@ function startSpawning() {
 
 function spawnBug() {
   if (gameOver) return;
-  const extraSlot = streak >= 5 && streak5Since !== null && Date.now() - streak5Since >= 2000 ? 1 : 0;
-  if (bugs.length >= MAX_BUGS_ON_SCREEN + extraSlot) return;
+  if (bugs.length >= MAX_BUGS_ON_SCREEN) return;
 
-  // Random size with ±20% jitter
   const baseSize = Math.max(10, Math.floor(BASE_BUG_SIZE * IMAGE_SCALE));
   const sizeMin  = Math.floor(baseSize * (1 - SIZE_JITTER));
   const sizeMax  = Math.floor(baseSize * (1 + SIZE_JITTER));
-  const size     = Math.max(10, Math.floor(baseSize * randf(1 - SIZE_JITTER, 1 + SIZE_JITTER)));
+  const size     = Math.max(10, Math.floor(randf(sizeMin, sizeMax)));
 
   // Position: random X, starts just above the canvas
   const x = Math.random() * (canvas.width - size);
@@ -52,6 +61,17 @@ function spawnBug() {
   // Bigger objects fall faster
   const t  = (size - sizeMin) / (sizeMax - sizeMin);
 
+  // First 5 spawns: unique cats, no anchors
+  if (introCatQueue.length > 0) {
+    const catIndex = introCatQueue.shift();
+    lastCatIndex  = catIndex;
+    lastSpawnType = 'cat';
+    const flip = Math.random() < CAT_FLIP_CHANCE;
+    const vy = (CAT_BASE_SPEED + t * CAT_SPEED_VARIANCE) * fallSpeedMultiplier * FALL_SPEED_BOOST;
+    bugs.push({ x, y, size, img: cats[catIndex], rot: 0, flip, vy, type: 'cat' });
+    return;
+  }
+
   // Decide: anchor or cat
   // Anchor chance is random in [MIN, MAX] each spawn, and anchor can't appear twice in a row
   const anchorChance = randf(ANCHOR_SPAWN_CHANCE_MIN, ANCHOR_SPAWN_CHANCE_MAX);
@@ -59,7 +79,7 @@ function spawnBug() {
 
   if (spawnAnchor) {
     // Anchor: no rotation, falls faster than cats
-    const vy = (3.45 + t * 2.40) * fallSpeedMultiplier * FALL_SPEED_BOOST * 1.15;
+    const vy = (ANCHOR_BASE_SPEED + t * ANCHOR_SPEED_VARIANCE) * fallSpeedMultiplier * FALL_SPEED_BOOST * ANCHOR_SPEED_BOOST;
     bugs.push({ x, y, size, img: anchorImg, rot: 0, vy, type: 'anchor' });
     lastSpawnType = 'anchor';
   } else {
@@ -72,7 +92,7 @@ function spawnBug() {
     lastSpawnType = 'cat';
 
     const flip = Math.random() < CAT_FLIP_CHANCE;
-    const vy = (2.875 + t * 2.00) * fallSpeedMultiplier * FALL_SPEED_BOOST;
+    const vy = (CAT_BASE_SPEED + t * CAT_SPEED_VARIANCE) * fallSpeedMultiplier * FALL_SPEED_BOOST;
     bugs.push({ x, y, size, img: cats[catIndex], rot: 0, flip, vy, type: 'cat' });
   }
 }

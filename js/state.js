@@ -15,9 +15,11 @@ let gameOver = false;
 let escapedCats = 0;
 let lastCatIndex = -1;
 let lastSpawnType = null; // 'cat' | 'anchor' — prevents same object twice in a row
-let fallSpeedMultiplier = FALL_SPEED_MULTIPLIER_START; // grows per click from start value
+let fallSpeedMultiplier = 1.0; // grows per click; 1.0 = base speed
 let streakHitTimes = []; // timestamps of hits in current streak (for fast-combo detection)
-let streak5Since = null; // timestamp when streak first reached 5 (for +1 slot bonus)
+let streak5Since    = null; // timestamp when streak first reached 5
+let introCatQueue   = [];  // first 5 spawns: unique cat indices in random order
+let streak5Hits  = 0;   // successful clicks made while streak === 5
 let lastHundredSound = 0; // tracks the last hundred milestone for meow sound
 let errorFlash = 0; // frames left for red border flash on error
 

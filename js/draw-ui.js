@@ -68,18 +68,7 @@ function drawTutorialWater() {
   ctx.clip();
   ctx.drawImage(waterLevelImg, 0, waterY, canvas.width, imgH);
 
-  if (waterLevelTopImg.complete && waterLevelTopImg.naturalWidth > 0) {
-    const scale   = 1.2;
-    const topImgW = canvas.width * scale;
-    const topImgH = waterLevelTopImg.naturalHeight * (topImgW / waterLevelTopImg.naturalWidth);
-
-    waveClock += 0.0135;
-    const waveX   = Math.sin(waveClock) * canvas.width * 0.05;
-    const topImgX = -(topImgW - canvas.width) / 2 + waveX;
-    const topImgY = waterY - canvas.height * 0.07;
-
-    ctx.drawImage(waterLevelTopImg, topImgX, topImgY, topImgW, topImgH);
-  }
+  drawWaterTop(waterY - canvas.height * 0.07);
   ctx.restore();
 }
 
@@ -219,10 +208,7 @@ function drawCenterOverlay() {
   }
 
   // Start button
-  const w = START_IMG_W;
-  const h = START_IMG_H;
-  const x = (canvas.width  - w) / 2;
-  const y = canvas.height * 0.33 - h / 2 + START_IMG_Y_OFFSET;
+  const { x, y, w, h } = startRect();
 
   const startImg = (startAltFrame && start2.complete && start2.naturalWidth > 0) ? start2 : start1;
 
@@ -238,11 +224,7 @@ function drawCenterOverlay() {
 
   // Tutorial button: full size below start (no scores) / half size below scoreboard (with scores)
   {
-    const hasSb = bestScores.length > 0;
-    const tw = hasSb ? Math.round(TUTORIAL_IMG_W * 0.5) : TUTORIAL_IMG_W;
-    const th = hasSb ? Math.round(TUTORIAL_IMG_H * 0.5) : TUTORIAL_IMG_H;
-    const tx = (canvas.width - tw) / 2;
-    const ty = hasSb ? canvas.height * 0.60 + SCOREBOARD_Y_OFFSET + 142 + TUTORIAL_SB_GAP_Y : y + h + TUTORIAL_GAP_Y;
+    const { x: tx, y: ty, w: tw, h: th } = tutorialRect();
 
     const tutImg = (tutAltFrame && tut2.complete && tut2.naturalWidth > 0) ? tut2 : tut1;
 
@@ -409,12 +391,12 @@ function drawScoreboard() {
   drawScoreboardPaws(sbX, sbY, sbW, sbH);
 }
 
-function _sbPawAt(x, y, angle, size) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.drawImage(comboPawImg, -size / 2, -size, size, size);
-  ctx.restore();
+function _drawPaw(c, x, y, angle, size) {
+  c.save();
+  c.translate(x, y);
+  c.rotate(angle);
+  c.drawImage(comboPawImg, -size / 2, -size, size, size);
+  c.restore();
 }
 
 function drawScoreboardPaws(sbX, sbY, sbW, sbH) {
@@ -436,16 +418,16 @@ function drawScoreboardPaws(sbX, sbY, sbW, sbH) {
 
   // Top: left → right
   for (let x = left + off; x < right; x += SPC, idx++)
-    if (show(idx)) _sbPawAt(x, top,    0,           size);
+    if (show(idx)) _drawPaw(ctx, x, top,    0,           size);
   // Right: top → bottom
   for (let y = top + off;  y < bottom; y += SPC, idx++)
-    if (show(idx)) _sbPawAt(right, y,  Math.PI / 2, size);
+    if (show(idx)) _drawPaw(ctx, right, y,  Math.PI / 2, size);
   // Bottom: right → left
   for (let x = right - off; x > left;  x -= SPC, idx++)
-    if (show(idx)) _sbPawAt(x, bottom, Math.PI,     size);
+    if (show(idx)) _drawPaw(ctx, x, bottom, Math.PI,     size);
   // Left: bottom → top
   for (let y = bottom - off; y > top;  y -= SPC, idx++)
-    if (show(idx)) _sbPawAt(left, y,  -Math.PI / 2, size);
+    if (show(idx)) _drawPaw(ctx, left, y,  -Math.PI / 2, size);
 }
 
 function drawPawBorder() {
@@ -476,28 +458,18 @@ function drawPawBorder() {
   const W = cw, H = ch;
 
   // Top: left → right
-  for (let x = cx + off; x < W - cx; x += SPC) _pawAt(x, cx, 0, size);
+  for (let x = cx + off; x < W - cx; x += SPC) _drawPaw(pawCtx, x, cx, 0, size);
   // Right: top → bottom
-  for (let y = cx + off; y < H - cx; y += SPC) _pawAt(W - cx, y, Math.PI / 2, size);
+  for (let y = cx + off; y < H - cx; y += SPC) _drawPaw(pawCtx, W - cx, y, Math.PI / 2, size);
   // Bottom: right → left
-  for (let x = W - cx - off; x > cx; x -= SPC) _pawAt(x, H - cx, Math.PI, size);
+  for (let x = W - cx - off; x > cx; x -= SPC) _drawPaw(pawCtx, x, H - cx, Math.PI, size);
   // Left: bottom → top
-  for (let y = H - cx - off; y > cx; y -= SPC) _pawAt(cx, y, -Math.PI / 2, size);
+  for (let y = H - cx - off; y > cx; y -= SPC) _drawPaw(pawCtx, cx, y, -Math.PI / 2, size);
 }
 
-function _pawAt(x, y, angle, size) {
-  pawCtx.save();
-  pawCtx.translate(x, y);
-  pawCtx.rotate(angle);
-  pawCtx.drawImage(comboPawImg, -size / 2, -size, size, size);
-  pawCtx.restore();
-}
 
 function drawGameOver() {
-  const w = DEFEAT_IMG_W;
-  const h = DEFEAT_IMG_H;
-  const x = (canvas.width  - w) / 2;
-  const y = canvas.height * 0.33 - h / 2;
+  const { x, y, w, h } = defeatRect();
 
   const defeatImg = (defeatAltFrame && defeat1.complete && defeat1.naturalWidth > 0) ? defeat1 : defeat;
 

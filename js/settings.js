@@ -3,26 +3,45 @@
    ========================= */
 
 // Loading screen
-const STATUS_FONT_SIZE = 22; // font size for "Loading..." text
+const STATUS_FONT_SIZE = 26; // font size for "Loading..." text
 
 // Game rules
-const MAX_BUGS_ON_SCREEN = 3;
-const MAX_ESCAPED_CATS = 10; // 10 котов × 10% = 100% — game over
+const MAX_BUGS_ON_SCREEN = 4;
+const MAX_ESCAPED_CATS = 10;    // 10 котов × 10% = 100% — game over
+const ANCHOR_WATER_PENALTY = 1; // штраф уровня воды за клик на якорь (в котах)
 
 // Bug visuals
-const IMAGE_SCALE = 2.1875;   // базовый скейл кота
-const BASE_BUG_SIZE = 174;    // базовый размер до скейла (134 × 1.3)
-const SIZE_JITTER = 0.20;     // ±20% (0.20 => [0.8..1.2])
+const IMAGE_SCALE = 2.25;   // базовый скейл кота
+const BASE_BUG_SIZE = 200;    // базовый размер до скейла (134 × 1.3)
+const SIZE_JITTER = 0.10;     // разброс размера котов в процентах (±10% от базового размера)
 const CAT_FLIP_CHANCE = 0.5;  // вероятность зеркалить кота по горизонтали
 
 // Сложность — ускорение ТОЛЬКО от кликов, авто-ускорение отключено
-const SPAWN_INTERVAL_START_MS     = 1250;
-const SPAWN_INTERVAL_MIN_MS       = 420;
-const FALL_SPEED_BOOST            = 1.125; // общий множитель скорости падения котов и якорей
-const FALL_SPEED_MULTIPLIER_START = 0.45;   // начальная скорость (40% от базовой)
-const FALL_SPEED_MULTIPLIER_MAX   = 3.0;   // предел скорости
-const COMBO_BOOST_MIN             = 1.02;  // прирост скорости за комбо-стрик: мин 2%
-const COMBO_BOOST_MAX             = 1.07;  // прирост скорости за комбо-стрик: макс 7%
+const SPAWN_INTERVAL_START_MS     = 1550;
+const SPAWN_INTERVAL_MIN_MS       = 350;
+const FALL_SPEED_BOOST            = 0.5; // базовая скорость
+const FALL_SPEED_MULTIPLIER_MAX   = 8.67;  // предел скорости (в множителях от базовой)
+const CAT_BASE_SPEED              = 2.875; // базовая скорость падения кота
+const CAT_SPEED_VARIANCE          = 2.00;  // добавка скорости для крупного кота
+const ANCHOR_BASE_SPEED           = 3.05;  // базовая скорость падения якоря
+const ANCHOR_SPEED_VARIANCE       = 2.40;  // добавка скорости для крупного якоря
+const ANCHOR_SPEED_BOOST          = 1.15;  // якорь падает быстрее кота в × раз
+const STREAK5_BONUS_HITS1         = 7;     // кликов в комбо 5+ до 1-го ускорения спауна
+const STREAK5_BONUS_HITS2         = 14;     // кликов в комбо 5+ до 2-го ускорения спауна
+const STREAK5_BONUS_HITS3         = 21;     // кликов в комбо 5+ до 3-го ускорения спауна
+const STREAK5_INTERVAL_FACTOR1    = 0.65;   // интервал × 0.65 (на 35% чаще)
+const STREAK5_INTERVAL_FACTOR2    = 0.50;   // интервал × 0.50 (на 50% чаще)
+const STREAK5_INTERVAL_FACTOR3    = 0.35;   // интервал × 0.35 (на 65% чаще)
+const STREAK_BOOST_EVERY_N        = 5;     // каждые N хитов подряд (стрик ≥ 2) — ускорение спавна и скорости
+const STREAK_SPEED_BOOST_M        = 1.07;  // фиксированное ускорение +7% за N подряд
+const COMBO_BOOST_MIN             = 1.01;  // рандомное ускорение при стрике 5: мин
+const COMBO_BOOST_MAX             = 1.03;  // рандомное ускорение при стрике 5: макс
+
+// Error flash & dying cat effects
+const ERROR_FLASH_FRAMES   = 42;   // длительность красной рамки ошибки (~0.7 сек при 60 FPS)
+const ERROR_SPIKE_DEPTH    = 28;   // px — глубина зубца (больше = острее)
+const ERROR_SPIKE_STEP     = 16;   // px — шаг между зубцами (меньше = гуще)
+const DYING_CAT_FADE_SPEED = 0.07; // убывание прозрачности умирающего кота за кадр
 
 // Defeat image sizing
 const DEFEAT_IMG_W = 449;
@@ -76,10 +95,6 @@ const MEOW_SOUND_SOURCES = [
   "assets/meow-sounds/sound_garage-cat-meow-11-fx-306193.mp3",
 ];
 
-// Miss / error sound
-const ERROR_SOUND_SRC = "assets/error.mp3";
-const ERROR_VOLUME = 0.03; // internal volume setting 0.0..1.0
-
 // Scoreboard textures
 const TEXTURE1_SRC = "assets/texture1.webp";
 const TEXTURE2_SRC = "assets/texture2.webp";
@@ -91,8 +106,8 @@ const COMBO_PAW_SPACING = 58;   // px — distance between paw centres
 const COMBO_PAW_SPEED_4 = 15;   // px/s — march speed at streak 4
 const COMBO_PAW_SPEED   = 50;   // px/s — march speed at streak 5
 const COMBO_PAW_BORDER  = 30;   // px — strip width outside canvasFrame on each side
-const ANCHOR_SPAWN_CHANCE_MIN = 0.16; // min chance per spawn to be an anchor
-const ANCHOR_SPAWN_CHANCE_MAX = 0.28; // max chance per spawn to be an anchor
+const ANCHOR_SPAWN_CHANCE_MIN = 0.10; // min chance per spawn to be an anchor
+const ANCHOR_SPAWN_CHANCE_MAX = 0.18; // max chance per spawn to be an anchor
 const COMBO_WINDOW_MS   = 6000; // max ms for 5 hits to count as a fast combo
 
 // Vortex drain effect (activates on game over)

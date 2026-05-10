@@ -2,6 +2,16 @@
    DRAW: WATER LEVEL
    ========================= */
 
+function drawWaterTop(topY) {
+  if (!waterLevelTopImg.complete || waterLevelTopImg.naturalWidth === 0) return;
+  const scale = 1.2;
+  const topW  = canvas.width * scale;
+  const topH  = waterLevelTopImg.naturalHeight * (topW / waterLevelTopImg.naturalWidth);
+  waveClock  += 0.0135;
+  const topX  = -(topW - canvas.width) / 2 + Math.sin(waveClock) * canvas.width * 0.05;
+  ctx.drawImage(waterLevelTopImg, topX, topY, topW, topH);
+}
+
 function drawFieldTexture() {
   if (!waterLevelTopImg.complete || waterLevelTopImg.naturalWidth === 0) return;
 
@@ -43,18 +53,6 @@ function drawWaterLevel() {
   ctx.clip();
   ctx.drawImage(waterLevelImg, 0, waterCurrentY, canvas.width, imgH);
 
-  if (waterLevelTopImg.complete && waterLevelTopImg.naturalWidth > 0) {
-    const scale   = 1.2;
-    const topImgW = canvas.width * scale;
-    const topImgH = waterLevelTopImg.naturalHeight * (topImgW / waterLevelTopImg.naturalWidth);
-
-    // Oscillate ±5% of canvas width
-    waveClock += 0.0135;
-    const waveX   = Math.sin(waveClock) * canvas.width * 0.05;
-    const topImgX = -(topImgW - canvas.width) / 2 + waveX;
-    const topImgY = waterCurrentY - canvas.height * 0.10; // 10% above main water level
-
-    ctx.drawImage(waterLevelTopImg, topImgX, topImgY, topImgW, topImgH);
-  }
+  drawWaterTop(waterCurrentY - canvas.height * 0.10);
   ctx.restore();
 }

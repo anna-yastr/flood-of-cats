@@ -22,11 +22,12 @@ function drawBugs() {
     if (b.y > canvas.height) {
       bugs.splice(i, 1);
       if (b.type === 'anchor') continue;
-      errorFlash = 42; // ~0.7 sec at 60 FPS
+      errorFlash = ERROR_FLASH_FRAMES;
       streak = 0;
       streak5Since = null;
+      streak5Hits  = 0;
       streakHitTimes = [];
-      fallSpeedMultiplier = Math.max(FALL_SPEED_MULTIPLIER_START, fallSpeedMultiplier * 0.95);
+      fallSpeedMultiplier = Math.max(1.0, fallSpeedMultiplier * 0.95);
       updateScoreDisplay();
       escapedCats++;
       const waterFill = escapedCats * WATER_LEVEL_STEP;
@@ -66,7 +67,7 @@ function drawBugs() {
     b.x   += Math.cos(ang) * spd;
     b.y   += Math.sin(ang) * spd;
     b.rot += 0.28;
-    b.life -= 0.07;
+    b.life -= DYING_CAT_FADE_SPEED;
     if (b.life <= 0) { dyingBugs.splice(i, 1); continue; }
     ctx.save();
     ctx.globalAlpha = b.life;

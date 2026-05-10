@@ -66,25 +66,43 @@ function tryHit(mx, my) {
       dyingBugs.push({ x: b.x, y: b.y, size: b.size, img: b.img, rot: b.rot, flip: b.flip, tx: mx, ty: my, life: 1.0 });
       bugs.splice(i, 1);
       if (b.type === 'anchor') {
-        errorFlash = 42; // ~0.7 sec at 60 FPS
+        errorFlash = ERROR_FLASH_FRAMES;
         streak = 0;
         streak5Since = null;
+        streak5Hits  = 0;
         streakHitTimes = [];
-        fallSpeedMultiplier = Math.max(FALL_SPEED_MULTIPLIER_START, fallSpeedMultiplier * 0.95);
+        fallSpeedMultiplier = Math.max(1.0, fallSpeedMultiplier * 0.95);
+        escapedCats += ANCHOR_WATER_PENALTY;
+        const waterFill = escapedCats * WATER_LEVEL_STEP;
+        if (waterFill >= 1.0 && !gameOver) {
+          gameOver = true;
+          recordScore();
+          stopSpawning();
+          setMusicVolume(BACKGROUND_MUSIC_MENU_FACTOR);
+          if (countdownTimerId) clearInterval(countdownTimerId);
+          defeatTimeoutId = setTimeout(() => {
+            defeatTimeoutId = null;
+            resetRunState(false);
+          }, 30000);
+        }
         updateScoreDisplay();
       } else {
         const now = Date.now();
         streakHitTimes.push(now);
         const prevStreak = streak;
         streak = Math.min(streak + 1, 5);
-        if (streak === 5 && prevStreak < 5) streak5Since = now;
+        if (streak === 5 && prevStreak < 5) { streak5Since = now; streak5Hits = 0; }
+        if (streak === 5 && prevStreak === 5) streak5Hits++;
         score += streak;
         if (Math.floor(score / 100) > lastHundredSound) {
           lastHundredSound = Math.floor(score / 100);
           playMeowSound();
         }
         updateScoreDisplay();
-        if (streak === 5 && streakHitTimes.length % 5 === 0) {
+        if (streak >= 2 && streakHitTimes.length % STREAK_BOOST_EVERY_N === 0) {
+          fallSpeedMultiplier = Math.min(FALL_SPEED_MULTIPLIER_MAX, fallSpeedMultiplier * STREAK_SPEED_BOOST_M);
+        }
+        if (streak === 5 && streakHitTimes.length % STREAK_BOOST_EVERY_N === 0) {
           const comboBoost = randf(COMBO_BOOST_MIN, COMBO_BOOST_MAX);
           spawnInterval = Math.max(SPAWN_INTERVAL_MIN_MS, Math.floor(spawnInterval * (2 - comboBoost)));
           fallSpeedMultiplier = Math.min(FALL_SPEED_MULTIPLIER_MAX, fallSpeedMultiplier * comboBoost);
